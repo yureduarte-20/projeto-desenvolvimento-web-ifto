@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Início - Projeto Flask{% endblock %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Bem-vindo ao Projeto Flask MVC</h1>
+        <p class="col-md-8 fs-4">Esta aplicação usa Python, Flask, SQLAlchemy e Bootstrap. Demonstra como organizar o projeto usando a arquitetura Model-View-Controller.</p>
+        <a href="{{ url_for('users.list') }}" class="btn btn-primary btn-lg" type="button">Ver Usuários</a>
+    </div>
+</div>
+{% endblock %}

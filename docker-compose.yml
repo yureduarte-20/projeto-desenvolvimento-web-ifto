@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        USER: ${USER:-flaskuser}
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    env_file:
+      ./.env
