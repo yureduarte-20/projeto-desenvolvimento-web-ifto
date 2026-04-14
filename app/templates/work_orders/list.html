@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Ordens de Serviço{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Ordens de Serviço</h2>
+    <a href="{{ url_for('work_orders.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Nova OS
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data</th>
+                        <th>Número</th>
+                        <th>Cliente</th>
+                        <th>Status</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td class="align-middle">
+                            {{ order.date.strftime('%d/%m/%Y %H:%M') }}
+                        </td>
+                        <td class="align-middle fw-bold">
+                            {{ order.number }}
+                        </td>
+                        <td class="align-middle">
+                            {{ order.requester.name }}
+                        </td>
+                        <td class="align-middle">
+                            {% if order.status == 'Em Orçamento' %}
+                                <span class="badge bg-info text-dark">{{ order.status }}</span>
+                            {% elif order.status == 'Em Manutenção' %}
+                                <span class="badge bg-primary">{{ order.status }}</span>
+                            {% elif order.status == 'Aguardando Pagamento' %}
+                                <span class="badge bg-warning text-dark">{{ order.status }}</span>
+                            {% elif order.status == 'Finalizado' %}
+                                <span class="badge bg-success">{{ order.status }}</span>
+                            {% elif order.status == 'Cancelado' %}
+                                <span class="badge bg-danger">{{ order.status }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ order.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end align-middle px-3">
+                            <div class="btn-group" role="group">
+                                <!-- Botão de Copiar Link -->
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        onclick="copyTrackingLink('{{ url_for('work_orders.track', public_id=order.public_id, _external=True) }}')" 
+                                        title="Copiar Link de Rastreio">
+                                    <i class="bi bi-link-45deg"></i>
+                                </button>
+
+                                <!-- Botão de Editar: Apenas visual (placeholder) -->
+                                <button type="button" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                
+                                <!-- Botão de Excluir: Funcional com modal/confirmação -->
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal{{ order.id }}" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+
+                            <!-- Modal de Confirmação de Exclusão -->
+                            <div class="modal fade" id="deleteModal{{ order.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ order.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content text-start">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel{{ order.id }}">Confirmar Exclusão</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Tem certeza que deseja excluir a Ordem de Serviço <strong>{{ order.number }}</strong>?<br>
+                                            <small class="text-muted">Esta ação não pode ser desfeita e removerá todo o histórico associado.</small>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <form action="{{ url_for('work_orders.delete', id=order.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                            Nenhuma Ordem de Serviço encontrada.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container for Notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="copyToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle me-2"></i> Link de rastreio copiado com sucesso!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyTrackingLink(url) {
+        navigator.clipboard.writeText(url).then(function() {
+            var toastEl = document.getElementById('copyToast');
+            var toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }, function(err) {
+            console.error('Erro ao copiar link: ', err);
+            alert('Erro ao copiar o link. Por favor, tente selecionar e copiar manualmente.');
+        });
+    }
+</script>
+
+<!-- Estilos extras para o modal não herdar text-end da coluna -->
+<style>
+    .modal { text-align: left; }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+{% endblock %}

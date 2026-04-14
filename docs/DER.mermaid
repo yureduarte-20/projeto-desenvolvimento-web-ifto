@@ -1,0 +1,45 @@
+erDiagram
+    users ||--o{ requesters : "possui"
+    requesters ||--o{ work_orders : "solicita"
+    work_orders ||--o{ history_orders : "gera_historico"
+
+    users {
+        string id PK
+        string name
+        string email
+        string password
+    }
+
+    requesters {
+        string id PK
+        string name
+        string email
+        string phone
+        string document
+        string user_id FK
+    }
+
+    work_orders {
+        string id PK
+        datetime date
+        string status
+        string requester_id FK
+        datetime estimated_delivery_date
+        string number
+        string public_id
+        float final_price
+        float labor_cost
+        datetime delivered_at
+        boolean is_canceled
+        string cancelation_reason
+        string description
+    }
+
+    history_orders {
+        string id PK
+        string old_status 
+        string new_status 
+        string description
+        datetime changed_at
+        string work_order_id FK
+    }

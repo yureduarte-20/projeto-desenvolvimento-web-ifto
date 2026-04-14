@@ -13,7 +13,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">Flask MVC</a>
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">EletroService</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -23,8 +23,12 @@
                     <a class="nav-link" href="{{ url_for('main.index') }}">Início</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('work_orders.list_orders') }}">Ordens de Serviço</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('users.list') }}">Usuários</a>
                 </li>
+            </ul>
             <ul class="navbar-nav ms-auto">
                 {% if current_user.is_authenticated %}
                     <li class="nav-item">

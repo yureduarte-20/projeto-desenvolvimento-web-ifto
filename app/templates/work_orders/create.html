@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Abrir Ordem de Serviço{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <h2 class="mb-4 text-center">Abrir Ordem de Serviço</h2>
+
+        <form method="POST" action="{{ url_for('work_orders.create') }}" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Seção 1: Dados do Solicitante -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-fill me-2"></i>1. Identificação do Solicitante
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.requester_name.label(class="form-label") }}
+                            {{ form.requester_name(class="form-control " ~ ("is-invalid" if form.requester_name.errors else "")) }}
+                            {% for error in form.requester_name.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.requester_email.label(class="form-label") }}
+                            {{ form.requester_email(class="form-control " ~ ("is-invalid" if form.requester_email.errors else ""), type="email") }}
+                            {% for error in form.requester_email.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.requester_phone.label(class="form-label") }}
+                            {{ form.requester_phone(class="form-control " ~ ("is-invalid" if form.requester_phone.errors else ""), type="tel") }}
+                            {% for error in form.requester_phone.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.requester_document.label(class="form-label") }}
+                            {{ form.requester_document(class="form-control " ~ ("is-invalid" if form.requester_document.errors else "")) }}
+                            {% for error in form.requester_document.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 2: Dados da OS -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-tools me-2"></i>2. Informações da Ordem de Serviço
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control " ~ ("is-invalid" if form.description.errors else ""), rows="4", placeholder="Descreva o problema com detalhes...") }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.estimated_delivery_date.label(class="form-label") }}
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar-date"></i></span>
+                                {{ form.estimated_delivery_date(class="form-control " ~ ("is-invalid" if form.estimated_delivery_date.errors else ""), type="date") }}
+                                {% for error in form.estimated_delivery_date.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="form-text">Deixe em branco se não houver previsão inicial.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-5">
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary me-md-2">Cancelar</a>
+                {{ form.submit(class="btn btn-success px-4") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Opcional (se já não estiver no base.html): Adicionar Bootstrap Icons para os ícones ficarem bonitos -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+{% endblock %}

@@ -30,9 +30,11 @@ def create_app(config_name='development'):
     from app.controllers.main_controller import bp as main_bp
     from app.controllers.user_controller import bp as user_bp
     from app.controllers.auth_controller import bp as auth_bp
+    from app.controllers.work_order_controller import bp as work_order_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(work_order_bp)
     
     return app

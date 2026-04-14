@@ -1,0 +1,20 @@
+stateDiagram-v2
+    direction TB
+    
+    Em_Orcamento: Em Orçamento
+    Em_Manutencao: Em Manutenção
+    Aguardando_Pagamento: Aguardando Pagamento
+    Aguardando_Retirada: Aguardando Retirada
+    Finalizado: Finalizado
+    Cancelado: Cancelado
+
+    [*] --> Em_Orcamento
+    Em_Orcamento --> Em_Manutencao
+    Em_Orcamento --> Cancelado
+    Em_Manutencao --> Aguardando_Pagamento
+    Em_Manutencao --> Cancelado
+    Aguardando_Pagamento --> Aguardando_Retirada
+    Aguardando_Retirada --> Finalizado
+    
+    Finalizado --> [*]
+    Cancelado --> [*]
