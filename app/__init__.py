@@ -37,4 +37,8 @@ def create_app(config_name='development'):
     app.register_blueprint(auth_bp)
     app.register_blueprint(work_order_bp)
     
+    # Inicializar comandos CLI
+    from app import cli
+    cli.init_app(app)
+    
     return app
