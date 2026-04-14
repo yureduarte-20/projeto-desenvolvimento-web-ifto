@@ -59,10 +59,10 @@
                                     <i class="bi bi-link-45deg"></i>
                                 </button>
 
-                                <!-- Botão de Editar: Apenas visual (placeholder) -->
-                                <button type="button" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                <!-- Botão de Editar -->
+                                <a href="{{ url_for('work_orders.edit', id=order.id) }}" class="btn btn-sm btn-outline-secondary" title="Editar">
                                     <i class="bi bi-pencil-square"></i>
-                                </button>
+                                </a>
                                 
                                 <!-- Botão de Excluir: Funcional com modal/confirmação -->
                                 <button type="button" class="btn btn-sm btn-outline-danger" 

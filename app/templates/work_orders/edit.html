@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Editar OS - {{ order.number }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-pencil-square me-2"></i>Editar Ordem de Serviço</h2>
+            <a href="{{ url_for('work_orders.list_orders') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Voltar
+            </a>
+        </div>
+
+        <!-- Seção 1: Cabeçalho Informativo (Read-only) -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body p-0">
+                <div class="p-3 bg-dark text-white rounded-top d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-uppercase small opacity-75 d-block fw-bold">Número da OS</span>
+                        <span class="fs-4">{{ order.number }}</span>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-uppercase small opacity-75 d-block fw-bold">Status Atual</span>
+                        {% if order.status == 'Em Orçamento' %}
+                            <span class="badge bg-info text-dark fs-6">{{ order.status }}</span>
+                        {% elif order.status == 'Em Manutenção' %}
+                            <span class="badge bg-primary fs-6">{{ order.status }}</span>
+                        {% elif order.status == 'Aguardando Pagamento' %}
+                            <span class="badge bg-warning text-dark fs-6">{{ order.status }}</span>
+                        {% elif order.status == 'Finalizado' %}
+                            <span class="badge bg-success fs-6">{{ order.status }}</span>
+                        {% elif order.status == 'Cancelado' %}
+                            <span class="badge bg-danger fs-6">{{ order.status }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary fs-6">{{ order.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="p-3 border border-top-0 rounded-bottom bg-light">
+                    <div class="row">
+                        <div class="col-md-6 mb-2 mb-md-0">
+                            <span class="text-muted small d-block">Solicitante</span>
+                            <strong>{{ order.requester.name }}</strong> ({{ order.requester.email }})
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <span class="text-muted small d-block">Data de Abertura</span>
+                            <strong>{{ order.date.strftime('%d/%m/%Y %H:%M') }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if is_terminal %}
+        <div class="alert alert-warning border-0 shadow-sm mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Esta Ordem de Serviço está em um estado terminal (<strong>{{ order.status }}</strong>) e não pode mais ser editada.
+        </div>
+        {% endif %}
+
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="action" id="form-action" value="save">
+
+            <!-- Seção 2: Formulário de Edição -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title border-bottom pb-2 mb-4"><i class="bi bi-file-text me-2"></i>Informações Detalhadas</h5>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label fw-bold") }}
+                        {{ form.description(class="form-control " ~ ("is-invalid" if form.description.errors else ""), rows="4", readonly=is_terminal) }}
+                        {% for error in form.description.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.estimated_delivery_date.label(class="form-label fw-bold") }}
+                            {{ form.estimated_delivery_date(class="form-control " ~ ("is-invalid" if form.estimated_delivery_date.errors else ""), type="date", readonly=is_terminal) }}
+                            {% for error in form.estimated_delivery_date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Campos Financeiros (Aparecem fora de Em Orçamento) -->
+                        {% if order.status != 'Em Orçamento' %}
+                        <div class="col-md-6">
+                            {{ form.labor_cost.label(class="form-label fw-bold") }}
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                {{ form.labor_cost(class="form-control " ~ ("is-invalid" if form.labor_cost.errors else ""), type="number", step="0.01", readonly=is_terminal) }}
+                            </div>
+                            {% for error in form.labor_cost.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.final_price.label(class="form-label fw-bold") }}
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                {{ form.final_price(class="form-control " ~ ("is-invalid" if form.final_price.errors else ""), type="number", step="0.01", readonly=is_terminal) }}
+                            </div>
+                            {% for error in form.final_price.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text small">Preço total incluindo peças e mão de obra.</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de Atualização de Histórico -->
+            {% if not is_terminal %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title border-bottom pb-2 mb-4"><i class="bi bi-chat-left-dots me-2"></i>Nota de Atualização</h5>
+                    {{ form.history_note.label(class="form-label fw-bold") }}
+                    {{ form.history_note(class="form-control", rows="2") }}
+                    <div class="form-text">Esta nota será registrada na linha do tempo pública da OS.</div>
+                </div>
+            </div>
+
+            <!-- Seção de Cancelamento (Accordion) -->
+            {% if can_cancel %}
+            <div class="accordion mb-4" id="cancelAccordion">
+                <div class="accordion-item border-danger">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed text-danger fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCancel" aria-expanded="false">
+                            <i class="bi bi-x-circle me-2"></i> Deseja cancelar esta Ordem de Serviço?
+                        </button>
+                    </h2>
+                    <div id="collapseCancel" class="accordion-collapse collapse" data-bs-parent="#cancelAccordion">
+                        <div class="accordion-body bg-light">
+                            <p class="small text-muted mb-3">Ao cancelar, esta OS não poderá mais ser reativada ou editada.</p>
+                            <label for="{{ form.cancelation_reason.id }}" class="form-label fw-bold">Motivo do Cancelamento</label>
+                            {{ form.cancelation_reason(class="form-control mb-3", placeholder="Obrigatório para cancelar...") }}
+                            <button type="submit" class="btn btn-danger w-100" onclick="document.getElementById('form-action').value='cancel'; return confirm('Confirmar o cancelamento definitivo desta OS?');">
+                                Confirmar Cancelamento Definitivo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Botões de Ação Principais -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-5">
+                <button type="submit" class="btn btn-outline-primary px-4" onclick="document.getElementById('form-action').value='save'">
+                    <i class="bi bi-save me-1"></i> Salvar Somente Dados
+                </button>
+                {% if next_status %}
+                <button type="submit" class="btn btn-success px-5" onclick="document.getElementById('form-action').value='advance'; return confirm('Deseja avançar o status para: {{ next_status }}?');">
+                    <i class="bi bi-arrow-right-circle me-1"></i> {{ advance_label }}
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+{% endblock %}
