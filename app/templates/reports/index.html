@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-5 fw-bold">Relatórios e Dashboard</h1>
+            <p class="lead">Acompanhe métricas, gere relatórios e visualize o desempenho do seu serviço.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Card: Relatório de Entrada e Saída -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                            <i class="bi bi-arrow-left-right text-primary fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Relatório de Entrada e Saída</h5>
+                            <p class="text-muted mb-0">F2.1 - Detalhado por período</p>
+                        </div>
+                    </div>
+                    <p class="card-text flex-grow-1">
+                        Gere um relatório detalhado de todas as ordens de serviço criadas, entregues e canceladas em um período específico. 
+                        Inclui estatísticas de tempo médio de entrega e análise comparativa.
+                    </p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('reports.entrada_saida') }}" class="btn btn-primary w-100">
+                            <i class="bi bi-bar-chart-line me-2"></i>Acessar Relatório
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card: Dashboard com Gráficos -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                            <i class="bi bi-speedometer2 text-success fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Dashboard de Produtividade</h5>
+                            <p class="text-muted mb-0">F2.2 - Gráficos e métricas</p>
+                        </div>
+                    </div>
+                    <p class="card-text flex-grow-1">
+                        Visualize gráficos interativos com a distribuição de status, evolução diária de ordens, 
+                        receita gerada e os principais clientes. Métricas em tempo real para tomada de decisão.
+                    </p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('reports.dashboard') }}" class="btn btn-success w-100">
+                            <i class="bi bi-graph-up me-2"></i>Acessar Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card: Métricas Rápidas -->
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Métricas Rápidas</h5>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-primary mb-1" id="totalOrders">0</h3>
+                                <p class="text-muted mb-0">Total de OS</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-success mb-1" id="completedOrders">0</h3>
+                                <p class="text-muted mb-0">OS Finalizadas</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-warning mb-1" id="pendingOrders">0</h3>
+                                <p class="text-muted mb-0">OS em Andamento</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h3 class="text-danger mb-1" id="canceledOrders">0</h3>
+                                <p class="text-muted mb-0">OS Canceladas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Como usar os relatórios</h5>
+                    <ul class="mb-0">
+                        <li><strong>Relatório de Entrada e Saída:</strong> Use para análise detalhada do fluxo de ordens em um período específico. Filtre por datas para comparar desempenho entre meses.</li>
+                        <li><strong>Dashboard:</strong> Ideal para monitoramento diário. Os gráficos são atualizados automaticamente e mostram tendências importantes.</li>
+                        <li><strong>Exportação:</strong> Em breve, você poderá exportar os relatórios em formato PDF ou Excel para compartilhamento.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Carregar métricas rápidas via AJAX
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/relatorios/api/status-data')
+            .then(response => response.json())
+            .then(data => {
+                let total = 0;
+                let completed = 0;
+                let pending = 0;
+                let canceled = 0;
+                
+                // Calcular totais
+                for (let i = 0; i < data.labels.length; i++) {
+                    const status = data.labels[i];
+                    const count = data.datasets[0].data[i];
+                    total += count;
+                    
+                    if (status === 'Finalizado') {
+                        completed = count;
+                    } else if (status === 'Cancelado') {
+                        canceled = count;
+                    } else {
+                        pending += count;
+                    }
+                }
+                
+                // Atualizar elementos
+                document.getElementById('totalOrders').textContent = total;
+                document.getElementById('completedOrders').textContent = completed;
+                document.getElementById('pendingOrders').textContent = pending;
+                document.getElementById('canceledOrders').textContent = canceled;
+            })
+            .catch(error => console.error('Erro ao carregar métricas:', error));
+    });
+</script>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}

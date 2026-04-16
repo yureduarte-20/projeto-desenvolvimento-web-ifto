@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Relatório de Entrada e Saída{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 fw-bold">Relatório de Entrada e Saída</h1>
+            <p class="text-muted mb-0">F2.1 - Detalhamento de ordens por período</p>
+        </div>
+        <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Voltar
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Filtrar por Período</h5>
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Data Inicial</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" 
+                           value="{{ start_date.strftime('%Y-%m-%d') }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">Data Final</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" 
+                           value="{{ end_date.strftime('%Y-%m-%d') }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+            <div class="mt-3">
+                <small class="text-muted">
+                    Período selecionado: {{ start_date.strftime('%d/%m/%Y') }} até {{ end_date.strftime('%d/%m/%Y') }}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo Estatístico -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-primary border-2">
+                <div class="card-body text-center">
+                    <h2 class="display-6 text-primary">{{ total_created }}</h2>
+                    <p class="card-text">Ordens Criadas</p>
+                    <small class="text-muted">Entradas no período</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success border-2">
+                <div class="card-body text-center">
+                    <h2 class="display-6 text-success">{{ total_delivered }}</h2>
+                    <p class="card-text">Ordens Entregues</p>
+                    <small class="text-muted">Saídas no período</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-danger border-2">
+                <div class="card-body text-center">
+                    <h2 class="display-6 text-danger">{{ total_canceled }}</h2>
+                    <p class="card-text">Ordens Canceladas</p>
+                    <small class="text-muted">Cancelamentos no período</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if avg_delivery_time %}
+    <div class="alert alert-info mb-4">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-clock-history fs-4 me-3"></i>
+            <div>
+                <strong>Tempo médio de entrega:</strong> {{ "%.1f"|format(avg_delivery_time) }} dias
+                <small class="d-block text-muted">Calculado com base nas ordens entregues no período</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Abas -->
+    <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="created-tab" data-bs-toggle="tab" data-bs-target="#created" type="button" role="tab">
+                Ordens Criadas ({{ orders_created|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="delivered-tab" data-bs-toggle="tab" data-bs-target="#delivered" type="button" role="tab">
+                Ordens Entregues ({{ orders_delivered|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="canceled-tab" data-bs-toggle="tab" data-bs-target="#canceled" type="button" role="tab">
+                Ordens Canceladas ({{ orders_canceled|length }})
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="reportTabsContent">
+        <!-- Tab: Ordens Criadas -->
+        <div class="tab-pane fade show active" id="created" role="tabpanel">
+            {% if orders_created %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Data Criação</th>
+                            <th>Número OS</th>
+                            <th>Cliente</th>
+                            <th>Status</th>
+                            <th>Previsão Entrega</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders_created %}
+                        <tr>
+                            <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td class="fw-bold">{{ order.number }}</td>
+                            <td>{{ order.requester.name }}</td>
+                            <td>
+                                {% if order.status == 'Em Orçamento' %}
+                                    <span class="badge bg-info text-dark">{{ order.status }}</span>
+                                {% elif order.status == 'Em Manutenção' %}
+                                    <span class="badge bg-primary">{{ order.status }}</span>
+                                {% elif order.status == 'Aguardando Pagamento' %}
+                                    <span class="badge bg-warning text-dark">{{ order.status }}</span>
+                                {% elif order.status == 'Finalizado' %}
+                                    <span class="badge bg-success">{{ order.status }}</span>
+                                {% elif order.status == 'Cancelado' %}
+                                    <span class="badge bg-danger">{{ order.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ order.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if order.estimated_delivery_date %}
+                                    {{ order.estimated_delivery_date.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    <span class="text-muted">Não definida</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('work_orders.edit', id=order.id) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                <p class="text-muted">Nenhuma ordem criada no período selecionado.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Tab: Ordens Entregues -->
+        <div class="tab-pane fade" id="delivered" role="tabpanel">
+            {% if orders_delivered %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Data Entrega</th>
+                            <th>Número OS</th>
+                            <th>Cliente</th>
+                            <th>Data Criação</th>
+                            <th>Tempo Total</th>
+                            <th>Valor Final</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders_delivered %}
+                        <tr>
+                            <td>{{ order.delivered_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td class="fw-bold">{{ order.number }}</td>
+                            <td>{{ order.requester.name }}</td>
+                            <td>{{ order.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if order.created_at and order.delivered_at %}
+                                    {% set delta = order.delivered_at - order.created_at %}
+                                    {{ delta.days }} dias
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if order.final_price %}
+                                    R$ {{ "%.2f"|format(order.final_price) }}
+                                {% else %}
+                                    <span class="text-muted">Não definido</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('work_orders.edit', id=order.id) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-check-circle fs-1 text-muted d-block mb-3"></i>
+                <p class="text-muted">Nenhuma ordem entregue no período selecionado.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Tab: Ordens Canceladas -->
+        <div class="tab-pane fade" id="canceled" role="tabpanel">
+            {% if orders_canceled %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Data Cancelamento</th>
+                            <th>Número OS</th>
+                            <th>Cliente</th>
+                            <th>Motivo</th>
+                            <th>Status Anterior</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders_canceled %}
+                        <tr>
+                            <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td class="fw-bold">{{ order.number }}</td>
+                            <td>{{ order.requester.name }}</td>
+                            <td>
+                                {% if order.cancelation_reason %}
+                                    {{ order.cancelation_reason|truncate(50) }}
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% for history in order.history|sort(attribute='changed_at', reverse=true) %}
+                                    {% if history.new_status == 'Cancelado' and history.old_status %}
+                                        {{ history.old_status }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('work_orders.edit', id=order.id) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-x-circle fs-1 text-muted d-block mb-3"></i>
+                <p class="text-muted">Nenhuma ordem cancelada no período selecionado.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Botão de Exportação (futuro) -->
+    <div class="mt-4 text-end">
+        <button class="btn btn-outline-primary" disabled title="Em breve">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Exportar PDF
+        </button>
+        <button class="btn btn-outline-success ms-2" disabled title="Em breve">
+            <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+        </button>
+    </div>
+</div>
+
+<script>
+    // Atualizar data final para hoje por padrão
+    document.addEventListener('DOMContentLoaded', function() {
+        const endDateInput = document.getElementById('end_date');
+        if (!endDateInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            endDateInput.value = today;
+        }
+        
+        // Atualizar data inicial para 30 dias atrás por padrão
+        const startDateInput = document.getElementById('start_date');
+        if (!startDateInput.value) {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %}
