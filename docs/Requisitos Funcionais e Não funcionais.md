@@ -24,7 +24,7 @@
 | **F1.5** | Excluir/Cancelar Ordens de Serviço | Administrador |
 
 
-### **Necessidade 3: Relatórios de Entrada e Saída**
+### **Necessidade 2: Relatórios de Entrada e Saída**
 
 **Benefício:** Importante
 
