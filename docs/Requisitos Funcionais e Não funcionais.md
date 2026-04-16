@@ -31,7 +31,7 @@
 | Id Func. | Descrição das Funcionalidades | Atores envolvidos |
 | :---- | :---- | :---- |
 | **F2.1** | Gerar relatório detalhado de entrada e saída de Ordens de Serviço por período | Administrador, Operador |
-| **F3.2** | Exibir Dashboard com gráficos e métricas de produtividade e status geral das OS | Administrador |
+| **F2.2** | Exibir Dashboard com gráficos e métricas de produtividade e status geral das OS | Administrador |
 
 ### **Necessidade 4: Módulo de Transparência ao Cliente**
 
