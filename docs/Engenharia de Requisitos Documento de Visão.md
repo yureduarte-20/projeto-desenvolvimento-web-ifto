@@ -52,16 +52,12 @@ Este documento define as diretrizes para o desenvolvimento do sistema EletroServ
 | **Insumos ao sistema** | Responsável pela manutenção, adição, exclusão e edição de informações no sistema. |
 | **Representante** | A definir. |
 
-| Descrição | Usuário de Operador |
-| :---- | :---- |
-| **Papel** | Usuário com características de semi-parametrização do sistema. |
-| **Insumos ao sistema** | Responsável pela adição e edição e consulta de informações no sistema |
-| **Representante** | A definir. |
+
 
 | Descrição | Usuário Comum |
 | :---- | :---- |
 | **Papel** | Perfil de usuário para consulta de informações no sistema. |
-| **Insumos ao sistema** | Usuário com permissão de consulta de informações básicas |
+| **Insumos ao sistema** | Usuário com permissão de consulta de informações básicas, sem precisar de autenticação |
 | **Representante** | A definir. |
 
 0. **Necessidades e Funcionalidades**
@@ -71,41 +67,29 @@ Este documento define as diretrizes para o desenvolvimento do sistema EletroServ
 | Manutenção das Ordens de Serviços | **\<Crítico\>** |
 | **Id Func.** | **Descrição das Funcionalidades/atores envolvidos** |
 | **F1.1** | Cadastrar informações das Ordens de Serviços |
-|  | **Administrador, Usuário de Operador** |
+|  | **Administrador** |
 | **F1.2** | Editar informações das Ordens de Serviços |
-|  | **Administrador, Usuário de Operador** |
+|  | **Administrador** |
 | **F1.3** | Listar informações das Ordens de Serviços |
-|  | **Administrador, Usuário de Operador** |
+|  | **Administrador** |
 | **F1.4** | Excluir informações Ordens de Serviços |
-|  | **Administrador, Usuário de Operador** |
+|  | **Administrador** |
 | **F1.5** | Consultas das Ordens de Serviços |
-|  | **Usuário de Operador, Usuário Comum, Administrador** |
+|  | **Usuário Comum, Administrador** |
+
+
 
 | Necessidade 2 | Benefício |
 | :---- | ----- |
-| Manutenção de Estoque de peças de reposição | **Crítico** |
-| **Id Func.** | **Descrição das Funcionalidades/atores envolvidos** |
-| **F2.1** | Cadastrar peças de reposição |
-|  | **Administrador** |
-| **F2.2** | Editar peças de reposição |
-|  | **Administrador** |
-| **F2.3** | Listar todas as peças de reposição |
-|  | **Administrador, Usuário de Operador** |
-| **F2.4** | Excluir locais dos postos de vacinação |
-|  | **Administrador** |
-| **F2.5** | Consultar locais dos postos |
-|  | **Usuário de Operador, Administrador** |
-
-| Necessidade 3 | Benefício |
-| :---- | ----- |
 | Relatório de Entrada e Saída de Ordens de Serviços | **Crítico** |
 | **Id Func.** | **Descrição das Funcionalidades/atores envolvidos** |
-| **F3.1** | Exibir Gráficos e Métricas |
-|  | **Administrador, Usuário Operador** |
+| **F2.1** | Exibir Gráficos e Métricas |
+|  | **Administrador** |
 
  **Premissas e Restrições**
 
 | Premissas | Restrições |
 | ----- | ----- |
-| Funciona com internet Cadastro Obrigatório | Permitir acesso simultâneo de Usuários.  |
+| Funciona com internet  | Permitir acesso simultâneo de Usuários.  |
+| Cadastro Obrigatório para Administrador | 
 

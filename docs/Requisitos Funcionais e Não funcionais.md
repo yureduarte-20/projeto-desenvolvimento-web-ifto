@@ -23,17 +23,6 @@
 | **F1.4** | Consultar e Listar Ordens de Serviço (com filtros por status, data ou cliente) | Administrador, Operador |
 | **F1.5** | Excluir/Cancelar Ordens de Serviço | Administrador |
 
-### **Necessidade 2: Manutenção de Estoque de Peças de Reposição**
-
-**Benefício:** Crítico
-
-| Id Func. | Descrição das Funcionalidades | Atores envolvidos |
-| :---- | :---- | :---- |
-| **F2.1** | Cadastrar novas peças de reposição | Administrador |
-| **F2.2** | Editar informações de peças de reposição | Administrador |
-| **F2.3** | Registrar entrada e saída (baixa) de peças no estoque vinculadas a uma OS | Administrador, Operador |
-| **F2.4** | Consultar e Listar peças de reposição e quantidades disponíveis | Administrador, Operador |
-| **F2.5** | Excluir registro de peças do sistema | Administrador |
 
 ### **Necessidade 3: Relatórios de Entrada e Saída**
 
@@ -41,7 +30,7 @@
 
 | Id Func. | Descrição das Funcionalidades | Atores envolvidos |
 | :---- | :---- | :---- |
-| **F3.1** | Gerar relatório detalhado de entrada e saída de Ordens de Serviço por período | Administrador, Operador |
+| **F2.1** | Gerar relatório detalhado de entrada e saída de Ordens de Serviço por período | Administrador, Operador |
 | **F3.2** | Exibir Dashboard com gráficos e métricas de produtividade e status geral das OS | Administrador |
 
 ### **Necessidade 4: Módulo de Transparência ao Cliente**
@@ -50,7 +39,7 @@
 
 | Id Func. | Descrição das Funcionalidades | Atores envolvidos |
 | :---- | :---- | :---- |
-| **F4.1** | Gerar automaticamente um código de rastreamento único no momento da abertura da OS | Sistema |
-| **F4.2** | Consultar o status atual da OS através do código de rastreamento em uma página pública | Usuário Comum (Cliente) |
-| **F4.3** | Visualizar a linha do tempo com o histórico de atualizações da manutenção (data, hora e etapa) | Usuário Comum (Cliente) |
+| **F3.1** | Gerar automaticamente um código de rastreamento único no momento da abertura da OS | Sistema |
+| **F3.2** | Consultar o status atual da OS através do código de rastreamento em uma página pública | Usuário Comum (Cliente) |
+| **F3.3** | Visualizar a linha do tempo com o histórico de atualizações da manutenção (data, hora e etapa) | Usuário Comum (Cliente) |
 
