@@ -5,15 +5,17 @@ from app.models.requester import Requester
 from app.models.history_order import HistoryOrder
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import func, extract
-
+from flask_login import login_required
 bp = Blueprint('reports', __name__, url_prefix='/relatorios')
 
 @bp.route('/')
+@login_required
 def index():
     """Página inicial dos relatórios"""
     return render_template('reports/index.html')
 
 @bp.route('/entrada-saida')
+@login_required
 def entrada_saida():
     """Relatório detalhado de entrada e saída de Ordens de Serviço por período"""
     # Obter parâmetros de data
@@ -86,6 +88,7 @@ def entrada_saida():
                          avg_delivery_time=avg_delivery_time)
 
 @bp.route('/dashboard')
+@login_required
 def dashboard():
     """Dashboard com gráficos e métricas de produtividade"""
     # Obter parâmetros de data
@@ -183,6 +186,7 @@ def dashboard():
                          cancellation_rate=cancellation_rate)
 
 @bp.route('/api/status-data')
+@login_required
 def api_status_data():
     """API para dados de status (usado em gráficos)"""
     # Obter dados para gráfico de pizza de status
@@ -209,6 +213,7 @@ def api_status_data():
     return jsonify(data)
 
 @bp.route('/api/daily-data')
+@login_required
 def api_daily_data():
     """API para dados diários (usado em gráfico de linha)"""
     # Últimos 7 dias

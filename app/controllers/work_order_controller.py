@@ -5,7 +5,7 @@ from app.models.work_order import WorkOrder
 from app.models.history_order import HistoryOrder
 from app.forms.work_order_forms import WorkOrderForm, WorkOrderEditForm
 from datetime import datetime, timezone
-
+from flask_login import login_required
 bp = Blueprint('work_orders', __name__, url_prefix='/ordens')
 
 # Máquina de estados baseada no Fluxo de Status.mermaid
@@ -19,6 +19,7 @@ STATUS_TRANSITIONS = {
 }
 
 @bp.route('/nova', methods=['GET', 'POST'])
+@login_required
 def create():
     # ... (existing code remains same)
     form = WorkOrderForm()
@@ -68,11 +69,13 @@ def create():
     return render_template('work_orders/create.html', form=form)
 
 @bp.route('/')
+@login_required
 def list_orders():
     orders = WorkOrder.query.order_by(WorkOrder.date.desc()).all()
     return render_template('work_orders/list.html', orders=orders)
 
 @bp.route('/<int:id>/editar', methods=['GET', 'POST'])
+@login_required
 def edit(id):
     order = WorkOrder.query.get_or_404(id)
     form = WorkOrderEditForm(obj=order)
@@ -146,6 +149,7 @@ def edit(id):
                            is_terminal=is_terminal)
 
 @bp.route('/<int:id>/delete', methods=['POST'])
+@login_required
 def delete(id):
     order = WorkOrder.query.get_or_404(id)
     try:
@@ -160,6 +164,7 @@ def delete(id):
     return redirect(url_for('work_orders.list_orders'))
 
 @bp.route('/rastreio/<string:public_id>')
+@login_required
 def track(public_id):
     order = WorkOrder.query.filter_by(public_id=public_id).first_or_404()
     # Ordenar o histórico para exibir a timeline corretamente
