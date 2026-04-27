@@ -5,7 +5,7 @@
 # ==============================================================================
 
 # --- 1. CONFIGURAÇÕES ---
-BASE_DIR="/home/yure/www/projeto-desenvolvimento-web-ifto/deploy.sh"
+BASE_DIR="/home/yure/www/projeto-desenvolvimento-web-ifto"
 ENV_FILE="$BASE_DIR/.env.deploy"
 LOG_DIR="$BASE_DIR/logs"
 LOGFILE="$LOG_DIR/deploy.log"
