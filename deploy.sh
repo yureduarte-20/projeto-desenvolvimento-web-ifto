@@ -80,15 +80,15 @@ git pull origin main
 
 echo "🏗️ Reconstruindo containers do Docker Compose..."
 send_telegram "🏗️ <b>Reconstruindo containers...</b>%0A📦 Projeto: EletroService" "info"
-docker compose build
+docker compose -f docker-compose.prod.yml build
 
 echo "🚀 Reiniciando serviços..."
 send_telegram "🚀 <b>Reiniciando serviços...</b>%0A📦 Projeto: EletroService" "info"
-docker compose up -d
+docker compose -f docker-compose.prod.yml up -d
 
 echo "🗄️ Migrando Banco de Dados..."
 send_telegram "🗄️ <b>Migrando Banco de Dados...</b>%0A📦 Projeto: EletroService" "info"
-docker compose exec web flask db upgrade
+docker compose -f docker-compose.prod.yml exec web flask db upgrade
 
 echo "========================================"
 echo "DEPLOY CONCLUÍDO COM SUCESSO"
