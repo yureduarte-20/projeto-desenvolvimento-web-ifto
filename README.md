@@ -111,6 +111,37 @@ Para criar um usuário dentro do container:
 docker compose exec web flask create-user "Nome" "email@exemplo.com" "senha"
 ```
 
+## Como Executar os Testes
+
+O projeto possui uma suíte de **124 testes automatizados** com cobertura de 94%. Para mais detalhes, consulte o [Plano de Testes](docs/testing.md).
+
+### Via Docker Compose (Recomendado)
+
+```bash
+# Executar toda a suíte de testes
+docker compose exec web python -m pytest tests/ -v --tb=short
+
+# Executar com relatório de cobertura
+docker compose exec web python -m pytest tests/ --cov=app --cov-report=term-missing
+
+# Executar um módulo específico
+docker compose exec web python -m pytest tests/test_work_order_controller.py -v
+
+# Executar um teste específico
+docker compose exec web python -m pytest tests/test_models.py::TestStatusTransitions -v
+```
+
+> [!NOTE]
+> O container precisa estar em execução (`docker compose up -d`) antes de rodar os testes.
+
+### Via Ambiente Virtual Local
+
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+pytest tests/ -v --tb=short
+```
+
 ## Como Rodar no Replit
 
 Ao importar este repositório no Replit:
