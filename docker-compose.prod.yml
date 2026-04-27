@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   web:
+    container_name: ordem-servico-flask
     build:
       context: .
       args:
@@ -11,3 +12,13 @@ services:
       - .:/app
     env_file:
       ./.env
+    networks:
+      - npm
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+networks:
+  npm:
+    external: true
