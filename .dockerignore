@@ -1,0 +1,29 @@
+# Controle de Versão
+.git/
+.gitignore
+
+# Ambientes Python
+venv/
+env/
+.env
+__pycache__/
+*.pyc
+
+# Banco de Dados Local
+*.db
+instance/
+
+# Testes e Relatórios
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Arquivos de Deploy Local
+logs/
+.dockerignore
+docker-compose.yml
+docker-compose.prod.yml
