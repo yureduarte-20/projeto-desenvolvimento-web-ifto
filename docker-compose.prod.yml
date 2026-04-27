@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        USER: ${USER:-flaskuser}
+    volumes:
+      - .:/app
+    env_file:
+      ./.env
