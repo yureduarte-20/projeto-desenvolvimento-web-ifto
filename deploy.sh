@@ -5,7 +5,7 @@
 # ==============================================================================
 
 # --- 1. CONFIGURAÇÕES ---
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+BASE_DIR="/home/yure/www/projeto-desenvolvimento-web-ifto/deploy.sh"
 ENV_FILE="$BASE_DIR/.env.deploy"
 LOG_DIR="$BASE_DIR/logs"
 LOGFILE="$LOG_DIR/deploy.log"

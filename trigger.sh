@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Caminho absoluto para o seu script de deploy real
-DEPLOY_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)/deploy.sh"
+DEPLOY_SCRIPT="/home/yure/www/projeto-desenvolvimento-web-ifto/deploy.sh"
 
 # Verifica se o arquivo existe antes de tentar rodar
 if [ -f "$DEPLOY_SCRIPT" ]; then
