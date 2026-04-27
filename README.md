@@ -74,7 +74,15 @@ flask db migrate -m "Criando tabela de usuários"
 flask db upgrade
 ```
 
-### 4. Executar Servidor
+### 4. Gerenciamento de Usuários (CLI)
+
+O projeto possui comandos de linha de comando para gerenciar o sistema. Você pode criar novos usuários diretamente pelo terminal:
+
+```bash
+flask create-user "Nome do Usuário" "email@exemplo.com" "senha123"
+```
+
+### 5. Executar Servidor
 
 ```bash
 python run.py
@@ -96,6 +104,11 @@ A aplicação estará disponível em `http://localhost:5000`.
 **Atenção:** Se for a primeira vez, será necessário rodar as migrações dentro do container para criar o banco de dados.
 ```bash
 docker compose exec web flask db upgrade
+```
+
+Para criar um usuário dentro do container:
+```bash
+docker compose exec web flask create-user "Nome" "email@exemplo.com" "senha"
 ```
 
 ## Como Rodar no Replit

@@ -17,10 +17,10 @@
 
 | Id Func. | Descrição das Funcionalidades | Atores envolvidos |
 | :---- | :---- | :---- |
-| **F1.1** | Cadastrar informações de novas Ordens de Serviço (Abertura) | Administrador, Operador |
-| **F1.2** | Editar informações das Ordens de Serviço | Administrador, Operador |
-| **F1.3** | Atualizar o status da Ordem de Serviço (ex: Em Triagem, Aguardando Peça, Em Manutenção, Concluído) | Administrador, Operador |
-| **F1.4** | Consultar e Listar Ordens de Serviço (com filtros por status, data ou cliente) | Administrador, Operador |
+| **F1.1** | Cadastrar informações de novas Ordens de Serviço (Abertura) | Administrador |
+| **F1.2** | Editar informações das Ordens de Serviço | Administrador |
+| **F1.3** | Atualizar o status da Ordem de Serviço (ex: Em Triagem, Aguardando Peça, Em Manutenção, Concluído) | Administrador |
+| **F1.4** | Consultar e Listar Ordens de Serviço (com filtros por status, data ou cliente) | Administrador |
 | **F1.5** | Excluir/Cancelar Ordens de Serviço | Administrador |
 
 
@@ -30,7 +30,7 @@
 
 | Id Func. | Descrição das Funcionalidades | Atores envolvidos |
 | :---- | :---- | :---- |
-| **F2.1** | Gerar relatório detalhado de entrada e saída de Ordens de Serviço por período | Administrador, Operador |
+| **F2.1** | Gerar relatório detalhado de entrada e saída de Ordens de Serviço por período | Administrador |
 | **F2.2** | Exibir Dashboard com gráficos e métricas de produtividade e status geral das OS | Administrador |
 
 ### **Necessidade 4: Módulo de Transparência ao Cliente**
