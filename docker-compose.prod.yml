@@ -8,8 +8,6 @@ services:
       args:
         UID: ${UID:-1000}
         USER: ${USER:-flaskuser}
-    volumes:
-      - .:/app
     env_file:
       ./.env
     networks:
