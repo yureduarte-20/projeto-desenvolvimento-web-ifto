@@ -25,9 +25,6 @@ COPY --chown=$USER:$USER . .
 # Expor a porta que o Flask vai rodar
 EXPOSE 5000
 
-# Variáveis de ambiente
-ENV FLASK_APP=run.py
-ENV FLASK_ENV=development
 ENV FLASK_RUN_HOST=0.0.0.0
 
 # Alternar para o usuário não-root
