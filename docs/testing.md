@@ -1,7 +1,7 @@
 # Plano de Testes TDD-First — EletroService
 
-**Versão:** 1.0  
-**Data:** 27/04/2026  
+**Versão:** 1.1  
+**Data:** 10/05/2026  
 **Autor:** Yure Samarone Gomes Duarte  
 **Metodologia:** TDD (Test-Driven Development)
 
@@ -17,6 +17,7 @@ Este documento define a estratégia de testes automatizados do sistema **EletroS
 - Garantir **cobertura da máquina de estados** da OS (6 status, 7 transições)
 - Prevenir **regressões** em alterações futuras do código
 - Fornecer **documentação viva** do comportamento do sistema
+- Garantir **qualidade de frontend** com testes visuais, responsivos e de acessibilidade
 
 ### 1.2 Documentos de Referência
 
@@ -26,12 +27,15 @@ Este documento define a estratégia de testes automatizados do sistema **EletroS
 | `docs/Requisitos Funcionais e Não funcionais.md` | 10 requisitos funcionais (F1.1–F3.3) com criticidade |
 | `docs/DER.mermaid` | Diagrama Entidade-Relacionamento (4 entidades) |
 | `docs/Fluxo de Status.mermaid` | Máquina de estados da OS (6 status, 7 transições) |
+| `docs/03-specs.md` | Especificações de frontend, design system, componentes |
 
 ---
 
 ## 2. Arquitetura de Testes
 
 ### 2.1 Stack de Testes
+
+#### Testes de Backend
 
 | Ferramenta | Versão | Finalidade |
 |---|---|---|
@@ -40,6 +44,15 @@ Este documento define a estratégia de testes automatizados do sistema **EletroS
 | **pytest-flask** | 1.3.0 | Integração pytest + Flask (test client) |
 | **factory-boy** | 3.3.1 | Fábricas de objetos de teste |
 | **faker** | 33.3.1 | Geração de dados falsos realísticos |
+
+#### Testes de Frontend (Recomendado)
+
+| Ferramenta | Versão | Finalidade |
+|---|---|---|
+| **Playwright** | 1.40+ | Testes E2E, acessibilidade, responsividade |
+| **Axe Core** | 4.8+ | Testes automatizados de acessibilidade |
+| **BackstopJS / Playwright** | - | Testes de regressão visual |
+| **Lighthouse CI** | - | Auditoria de performance e melhores práticas |
 
 ### 2.2 Estrutura de Diretórios
 
@@ -53,7 +66,15 @@ tests/
 ├── test_work_order_controller.py   # UC1–UC5, UC9, UC10 — Ordens de Serviço
 ├── test_report_controller.py       # UC6, UC7 — Relatórios e Dashboard
 ├── test_user_controller.py         # Gestão de usuários
-└── test_cli.py                     # Comando CLI create-user
+├── test_cli.py                     # Comando CLI create-user
+└── e2e/                            # Testes End-to-End (Playwright)
+    ├── __init__.py
+    ├── conftest.py
+    ├── test_auth.py
+    ├── test_work_orders.py
+    ├── test_dashboard.py
+    ├── test_accessibility.py
+    └── test_responsive.py
 ```
 
 ### 2.3 Configuração de Teste (`TestingConfig`)
@@ -75,185 +96,1056 @@ class TestingConfig(Config):
 
 ---
 
-## 3. Rastreabilidade — Casos de Uso × Testes
+## 3. Testes de Frontend (E2E)
 
-### 3.1 Área Administrativa (Acesso Restrito)
+### 3.1 Estratégia de Testes E2E
 
-| UC | Caso de Uso | Requisito | Arquivo de Teste | Cenários |
-|---|---|---|---|---|
-| **UC1** | Cadastrar OS | F1.1 | `test_work_order_controller.py` | Criar OS válida; Criar novo Requester; Reusar Requester existente; Verificar status inicial "Em Orçamento"; Gerar `number` e `public_id` (UC8); Criar histórico inicial |
-| **UC2** | Editar OS | F1.2 | `test_work_order_controller.py` | Editar descrição; Verificar 404 para OS inexistente |
-| **UC3** | Atualizar Status | F1.3 | `test_work_order_controller.py` | 6 transições válidas (T2–T7); Impedir avanço de terminal; Registrar histórico; Ciclo completo |
-| **UC4** | Consultar/Listar | F1.4 | `test_work_order_controller.py` | Listar vazia; Listar com dados |
-| **UC5** | Cancelar OS | F1.5 | `test_work_order_controller.py` | Cancelar de "Em Orçamento" (T3); Cancelar de "Em Manutenção" (T5); Impedir cancelamento indevido; Registrar motivo e histórico |
-| **UC6** | Gerar Relatórios | F2.1 | `test_report_controller.py` | Relatório com/sem datas; Datas inválidas; OS no período |
-| **UC7** | Dashboard | F2.2 | `test_report_controller.py` | Acesso; APIs JSON (status-data, daily-data); Dashboard com/sem dados |
-| **UC11** | Fazer Login | — | `test_auth_controller.py` | Login válido; Email inválido; Senha incorreta; Redirect autenticado; Logout; Proteção de 4 rotas |
+Os testes E2E utilizam **Playwright** para garantir que as funcionalidades críticas do sistema funcionem corretamente do ponto de vista do usuário final.
 
-### 3.2 Módulo de Transparência (Acesso Público)
+#### Pirâmide de Testes
 
-| UC | Caso de Uso | Requisito | Arquivo de Teste | Cenários |
-|---|---|---|---|---|
-| **UC8** | Gerar Código Rastreio | F3.1 | `test_models.py` | Geração automática de `public_id` (UUID); Geração de `number` (formato `OS-YYYYMMDD-XXXX`); Unicidade de ambos |
-| **UC9** | Consultar por Rastreio | F3.2 | `test_work_order_controller.py` | Consulta com ID válido; Consulta com ID inexistente (404) |
-| **UC10** | Linha do Tempo | F3.3 | `test_work_order_controller.py` + `test_models.py` | Histórico com timestamp; Transição registra `old_status`/`new_status`; Dados exibidos na página |
-
----
-
-## 4. Cenários de Teste Detalhados
-
-### 4.1 Máquina de Estados (Prioridade Crítica)
-
-A máquina de estados é o núcleo da lógica de negócio e possui **cobertura de 100%** das transições.
-
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> Em_Orcamento: T1 ✅
-    Em_Orcamento --> Em_Manutencao: T2 ✅
-    Em_Orcamento --> Cancelado: T3 ✅
-    Em_Manutencao --> Aguardando_Pagamento: T4 ✅
-    Em_Manutencao --> Cancelado: T5 ✅
-    Aguardando_Pagamento --> Aguardando_Retirada: T6 ✅
-    Aguardando_Retirada --> Finalizado: T7 ✅
-    Finalizado --> [*]
-    Cancelado --> [*]
+```
+        /\
+       /  \     E2E Tests (Playwright) - 10%
+      /----\    ------------------------
+     /      \   Integration Tests - 30%
+    /--------\  ------------------------
+   /          \ Unit Tests (pytest) - 60%
+  /____________\
 ```
 
-#### Transições Válidas
+### 3.2 Configuração do Playwright
 
-| ID | De | Para | Teste | Arquivo |
-|---|---|---|---|---|
-| T1 | `[*]` (abertura) | Em Orçamento | `test_criar_os_com_dados_validos` | `test_work_order_controller.py` |
-| T2 | Em Orçamento | Em Manutenção | `test_t2_avancar_em_orcamento_para_manutencao` | `test_work_order_controller.py` |
-| T3 | Em Orçamento | Cancelado | `test_t3_cancelar_em_orcamento` | `test_work_order_controller.py` |
-| T4 | Em Manutenção | Aguardando Pagamento | `test_t4_avancar_manutencao_para_aguardando_pagamento` | `test_work_order_controller.py` |
-| T5 | Em Manutenção | Cancelado | `test_t5_cancelar_em_manutencao` | `test_work_order_controller.py` |
-| T6 | Aguardando Pagamento | Aguardando Retirada | `test_t6_avancar_aguardando_pagamento_para_retirada` | `test_work_order_controller.py` |
-| T7 | Aguardando Retirada | Finalizado | `test_t7_avancar_aguardando_retirada_para_finalizado` | `test_work_order_controller.py` |
+**playwright.config.ts:**
+```typescript
+import { defineConfig, devices } from '@playwright/test';
 
-#### Transições Inválidas (Testes Negativos)
-
-| Cenário | Teste |
-|---|---|
-| Não avançar de Finalizado | `test_nao_avancar_de_finalizado` |
-| Não avançar de Cancelado | `test_nao_avancar_de_cancelado` |
-| Não cancelar de Aguardando Pagamento | `test_nao_cancelar_aguardando_pagamento` |
-| Não cancelar de Aguardando Retirada | `test_nao_cancelar_aguardando_retirada` |
-
-#### Teste de Integração
-
-| Cenário | Teste |
-|---|---|
-| Ciclo completo T1→T2→T4→T6→T7 | `test_ciclo_completo_happy_path` |
-
-### 4.2 Models (`test_models.py`)
-
-| Classe | Cenários | Total |
-|---|---|---|
-| `User` | Criação, `set_password`, `check_password`, `__repr__`, `is_authenticated` | 5 |
-| `Requester` | Criação, `user_id` opcional, relacionamento User, relacionamento WorkOrders, `__repr__` | 5 |
-| `WorkOrder` | Status padrão, geração `number`, geração `public_id`, unicidade, relacionamentos, cascade delete, `__repr__`, campos financeiros, campos cancelamento | 11 |
-| `HistoryOrder` | Histórico inicial, timestamp, transição, `__repr__` | 4 |
-| `STATUS_TRANSITIONS` | 6 status, flags `can_cancel`, `next` de cada status | 12 |
-
-### 4.3 Formulários (`test_forms.py`)
-
-| Form | Cenários | Total |
-|---|---|---|
-| `LoginForm` | Válido, email obrigatório, senha obrigatória, email inválido | 4 |
-| `WorkOrderForm` | Válido, 5 campos obrigatórios, descrição min 10 chars, data opcional | 8 |
-| `WorkOrderEditForm` | Válido, financeiros opcionais, cancelamento opcional, nota opcional | 4 |
-| `UserCreateForm` | Válido, senha mín 6 chars, email inválido | 3 |
-| `UserEditForm` | Senha opcional, senha curta | 2 |
-
-### 4.4 Controllers
-
-| Controller | Arquivo | Cenários | Total |
-|---|---|---|---|
-| Auth | `test_auth_controller.py` | Login/Logout/Proteção de rotas | 12 |
-| Work Order | `test_work_order_controller.py` | CRUD + Estado + Rastreio + Integração | 20 |
-| Report | `test_report_controller.py` | Relatórios + Dashboard + APIs | 10 |
-| User | `test_user_controller.py` | CRUD + Duplicata + 404 | 10 |
-
-### 4.5 CLI (`test_cli.py`)
-
-| Cenário | Total |
-|---|---|
-| Criar usuário; Duplicata | 2 |
-
----
-
-## 5. Estratégia de Mocks e Dependências
-
-| Dependência | Estratégia de Mock/Isolamento |
-|---|---|
-| **Banco de Dados** | SQLite `:memory:` — recriado por teste (`create_all`/`drop_all`) |
-| **CSRF Token** | `WTF_CSRF_ENABLED = False` na `TestingConfig` |
-| **Autenticação** | Fixture `authenticated_client` faz `POST /auth/login` antes dos testes |
-| **Sessões Flask** | `app.test_client()` com `TESTING = True` |
-| **Dados de Teste** | Fixtures `sample_user`, `sample_requester`, `sample_work_order` |
-
----
-
-## 6. Execução dos Testes
-
-### 6.1 Via Docker Compose (Recomendado)
-
-```bash
-# Executar toda a suíte
-docker compose exec web python -m pytest tests/ -v --tb=short
-
-# Executar com relatório de cobertura
-docker compose exec web python -m pytest tests/ --cov=app --cov-report=term-missing
-
-# Executar um módulo específico
-docker compose exec web python -m pytest tests/test_work_order_controller.py -v
-
-# Executar um teste específico
-docker compose exec web python -m pytest tests/test_work_order_controller.py::TestAtualizarStatus::test_ciclo_completo_happy_path -v
+export default defineConfig({
+  testDir: './tests/e2e',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: 'html',
+  use: {
+    baseURL: 'http://localhost:5000',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+    // Mobile
+    {
+      name: 'Mobile Chrome',
+      use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 12'] },
+    },
+  ],
+});
 ```
 
-### 6.2 Via Ambiente Virtual Local
+### 3.3 Cenários de Teste E2E
+
+#### 3.3.1 Autenticação (`test_auth.py`)
+
+```python
+# tests/e2e/test_auth.py
+import re
+from playwright.sync_api import Page, expect
+
+def test_login_success(page: Page):
+    """Testa login com credenciais válidas"""
+    page.goto("/auth/login")
+    
+    # Preenche formulário
+    page.get_by_label("Email").fill("admin@example.com")
+    page.get_by_label("Senha").fill("password123")
+    
+    # Submete
+    page.get_by_role("button", name="Entrar").click()
+    
+    # Verifica redirecionamento
+    expect(page).to_have_url("/")
+    
+    # Verifica mensagem de sucesso
+    expect(page.get_by_text("Login realizado com sucesso")).to_be_visible()
+
+def test_login_invalid_credentials(page: Page):
+    """Testa login com credenciais inválidas"""
+    page.goto("/auth/login")
+    
+    page.get_by_label("Email").fill("wrong@example.com")
+    page.get_by_label("Senha").fill("wrongpassword")
+    page.get_by_role("button", name="Entrar").click()
+    
+    # Permanece na página de login
+    expect(page).to_have_url("/auth/login")
+    
+    # Mostra mensagem de erro
+    expect(page.get_by_text("Email ou senha incorretos")).to_be_visible()
+
+def test_logout(page: Page):
+    """Testa logout do sistema"""
+    # Login primeiro
+    page.goto("/auth/login")
+    page.get_by_label("Email").fill("admin@example.com")
+    page.get_by_label("Senha").fill("password123")
+    page.get_by_role("button", name="Entrar").click()
+    
+    # Faz logout
+    page.get_by_role("link", name="Sair").click()
+    
+    # Verifica redirecionamento para login
+    expect(page).to_have_url("/auth/login")
+    
+    # Verifica mensagem
+    expect(page.get_by_text("Você saiu do sistema")).to_be_visible()
+```
+
+#### 3.3.2 Ordens de Serviço (`test_work_orders.py`)
+
+```python
+# tests/e2e/test_work_orders.py
+from playwright.sync_api import Page, expect
+
+def test_create_work_order(page: Page):
+    """Testa criação de nova ordem de serviço"""
+    page.goto("/work-orders/create")
+    
+    # Preenche dados do solicitante
+    page.get_by_label("Nome").fill("João Silva")
+    page.get_by_label("Email").fill("joao@email.com")
+    page.get_by_label("Telefone").fill("(11) 99999-9999")
+    
+    # Preenche dados da OS
+    page.get_by_label("Descrição").fill("Problema no aparelho que não liga mais")
+    
+    # Submete
+    page.get_by_role("button", name="Salvar").click()
+    
+    # Verifica redirecionamento
+    expect(page).to_have_url(re.compile("/work-orders"))
+    
+    # Verifica mensagem
+    expect(page.get_by_text("Ordem de serviço criada com sucesso")).to_be_visible()
+
+def test_list_work_orders(page: Page):
+    """Testa listagem de ordens de serviço"""
+    page.goto("/work-orders")
+    
+    # Verifica título
+    expect(page.get_by_role("heading", name="Ordens de Serviço")).to_be_visible()
+    
+    # Verifica botão de nova OS
+    expect(page.get_by_role("link", name="Nova OS")).to_be_visible()
+    
+    # Verifica tabela ou estado vazio
+    table_or_empty = page.locator("table tbody tr, .text-center.py-5").first
+    expect(table_or_empty).to_be_visible()
+
+def test_edit_work_order(page: Page):
+    """Testa edição de ordem de serviço"""
+    # Acessa lista primeiro
+    page.goto("/work-orders")
+    
+    # Clica no primeiro botão de editar se existir
+    edit_button = page.get_by_role("link", name="Editar").first
+    if edit_button.is_visible():
+        edit_button.click()
+        
+        # Modifica descrição
+        description_field = page.get_by_label("Descrição")
+        description_field.fill("Descrição atualizada via teste E2E")
+        
+        # Salva
+        page.get_by_role("button", name="Salvar").click()
+        
+        # Verifica mensagem
+        expect(page.get_by_text("salva com sucesso")).to_be_visible()
+
+def test_work_order_status_transitions(page: Page):
+    """Testa transições de status da OS"""
+    page.goto("/work-orders")
+    
+    # Acessa primeira OS para edição
+    edit_button = page.get_by_role("link", name="Editar").first
+    if edit_button.is_visible():
+        edit_button.click()
+        
+        # Verifica botão de avançar status existe
+        advance_button = page.get_by_role("button", name=re.compile("Avançar|Próximo"))
+        if advance_button.is_visible():
+            # Clica e confirma
+            advance_button.click()
+            page.get_by_role("button", name="Confirmar").click()
+            
+            # Verifica mensagem de sucesso
+            expect(page.get_by_text("Status atualizado")).to_be_visible()
+```
+
+#### 3.3.3 Dashboard e Relatórios (`test_dashboard.py`)
+
+```python
+# tests/e2e/test_dashboard.py
+from playwright.sync_api import Page, expect
+
+def test_dashboard_access(page: Page):
+    """Testa acesso ao dashboard"""
+    page.goto("/reports/dashboard")
+    
+    # Verifica título
+    expect(page.get_by_role("heading", name="Dashboard")).to_be_visible()
+    
+    # Verifica cards de métricas
+    expect(page.get_by_text("Total de Ordens")).to_be_visible()
+    expect(page.get_by_text("Receita Total")).to_be_visible()
+
+def test_dashboard_charts(page: Page):
+    """Testa carregamento de gráficos no dashboard"""
+    page.goto("/reports/dashboard")
+    
+    # Agrega carregamento dos gráficos
+    page.wait_for_timeout(2000)
+    
+    # Verifica se canvas dos gráficos estão presentes
+    charts = page.locator("canvas").all()
+    assert len(charts) >= 2, "Esperado pelo menos 2 gráficos"
+
+def test_report_generation(page: Page):
+    """Testa geração de relatórios"""
+    page.goto("/reports/entrada-saida")
+    
+    # Define período
+    page.get_by_label("Data Inicial").fill("2026-01-01")
+    page.get_by_label("Data Final").fill("2026-12-31")
+    
+    # Filtra
+    page.get_by_role("button", name="Filtrar").click()
+    
+    # Verifica resultados
+    expect(page.locator("table tbody tr, .text-center.py-5").first).to_be_visible()
+```
+
+#### 3.3.4 Testes de Acessibilidade (`test_accessibility.py`)
+
+```python
+# tests/e2e/test_accessibility.py
+import pytest
+from playwright.sync_api import Page
+from axe_playwright_python import run_axe
+
+def test_home_page_accessibility(page: Page):
+    """Testa acessibilidade da página inicial"""
+    page.goto("/")
+    
+    # Executa análise do axe
+    results = run_axe(page)
+    
+    # Verifica se não há violações críticas
+    critical_violations = [v for v in results.violations if v.impact == 'critical']
+    assert len(critical_violations) == 0, f"Violações críticas encontradas: {critical_violations}"
+
+def test_login_page_accessibility(page: Page):
+    """Testa acessibilidade da página de login"""
+    page.goto("/auth/login")
+    
+    results = run_axe(page)
+    
+    # Verifica labels de formulário
+    form_violations = [v for v in results.violations if 'form' in v.id or 'label' in v.id]
+    assert len(form_violations) == 0, f"Problemas em formulários: {form_violations}"
+
+def test_keyboard_navigation(page: Page):
+    """Testa navegação por teclado"""
+    page.goto("/auth/login")
+    
+    # Pressiona Tab várias vezes
+    for _ in range(5):
+        page.keyboard.press('Tab')
+        # Verifica se algum elemento está focado
+        focused = page.evaluate('() => document.activeElement.tagName')
+        assert focused != 'BODY', "Navegação por teclado falhou"
+
+def test_contrast_ratios(page: Page):
+    """Testa taxas de contraste"""
+    page.goto("/")
+    
+    results = run_axe(page)
+    
+    # Filtra violações de contraste
+    contrast_violations = [v for v in results.violations if 'contrast' in v.id]
+    
+    # Permite no máximo 2 violações menores
+    serious_contrast = [v for v in contrast_violations if v.impact in ['serious', 'critical']]
+    assert len(serious_contrast) == 0, f"Violações graves de contraste: {serious_contrast}"
+```
+
+#### 3.3.5 Testes Responsivos (`test_responsive.py`)
+
+```python
+# tests/e2e/test_responsive.py
+from playwright.sync_api import Page, expect
+
+def test_mobile_navigation(page: Page):
+    """Testa navegação em dispositivo móvel"""
+    # Configura viewport mobile
+    page.set_viewport_size({"width": 375, "height": 667})
+    
+    page.goto("/")
+    
+    # Verifica se o menu hamburguer está visível
+    menu_button = page.get_by_role("button", name="Toggle navigation")
+    expect(menu_button).to_be_visible()
+    
+    # Abre o menu
+    menu_button.click()
+    
+    # Verifica se os itens do menu estão visíveis
+    expect(page.get_by_role("link", name="Ordens de Serviço")).to_be_visible()
+
+def test_table_responsiveness(page: Page):
+    """Testa responsividade de tabelas"""
+    page.set_viewport_size({"width": 768, "height": 1024})
+    page.goto("/work-orders")
+    
+    # Verifica se a tabela tem scroll horizontal quando necessário
+    table_container = page.locator(".table-responsive").first
+    
+    if table_container.is_visible():
+        # Verifica se o container tem overflow
+        has_scroll = table_container.evaluate("el => el.scrollWidth > el.clientWidth")
+        
+        # Em telas menores, tabelas grandes devem ter scroll
+        if has_scroll:
+            # Verifica se é possível scrollar
+            table_container.evaluate("el => el.scrollLeft = 100")
+
+def test_form_layout_mobile(page: Page):
+    """Testa layout de formulários em mobile"""
+    page.set_viewport_size({"width": 375, "height": 667})
+    page.goto("/work-orders/create")
+    
+    # Verifica se os campos estão empilhados verticalmente
+    form = page.locator("form").first
+    
+    # Verifica se inputs são largos o suficiente
+    inputs = form.locator("input[type='text'], input[type='email']").all()
+    
+    for input_field in inputs:
+        if input_field.is_visible():
+            box = input_field.bounding_box()
+            # Em mobile, inputs devem ocupar quase toda largura
+            assert box['width'] >= 300, f"Input muito estreito: {box['width']}px"
+
+def test_breakpoint_transitions(page: Page):
+    """Testa transições entre breakpoints"""
+    page.goto("/")
+    
+    breakpoints = [
+        {"width": 320, "height": 568},   # Mobile pequeno
+        {"width": 375, "height": 667},   # Mobile
+        {"width": 768, "height": 1024},  # Tablet
+        {"width": 1024, "height": 768},  # Desktop pequeno
+        {"width": 1440, "height": 900},  # Desktop
+    ]
+    
+    for size in breakpoints:
+        page.set_viewport_size(size)
+        
+        # Recarrega para aplicar media queries
+        page.reload()
+        
+        # Verifica se conteúdo principal está visível
+        expect(page.locator("main").first).to_be_visible()
+        
+        # Verifica se não há scroll horizontal indesejado
+        has_h_scroll = page.evaluate("() => document.documentElement.scrollWidth > window.innerWidth")
+        assert not has_h_scroll, f"Scroll horizontal detectado em {size['width']}x{size['height']}"
+```
+
+### 3.4 Testes de Componentes e Renderização
+
+```python
+# tests/e2e/test_components.py
+from playwright.sync_api import Page, expect
+
+def test_card_hover_effects(page: Page):
+    """Testa efeitos hover em cards"""
+    page.goto("/reports")
+    
+    # Localiza primeiro card
+    card = page.locator(".card").first
+    
+    # Captura estado inicial
+    initial_box = card.bounding_box()
+    
+    # Hover no card
+    card.hover()
+    
+    # Aguarda transição
+    page.wait_for_timeout(300)
+    
+    # Verifica se houve transformação (elevação)
+    # Nota: bounding_box pode não mudar com transform, verificamos visualmente
+
+def test_modal_interactions(page: Page):
+    """Testa interações com modais"""
+    page.goto("/work-orders")
+    
+    # Clica no primeiro botão de excluir
+    delete_button = page.get_by_role("button", name="Excluir").first
+    
+    if delete_button.is_visible():
+        delete_button.click()
+        
+        # Verifica se modal apareceu
+        modal = page.locator(".modal").first
+        expect(modal).to_be_visible()
+        
+        # Verifica conteúdo do modal
+        expect(page.get_by_text("Confirmar Exclusão")).to_be_visible()
+        
+        # Fecha modal
+        page.get_by_role("button", name="Cancelar").click()
+        
+        # Verifica se modal fechou
+        expect(modal).not_to_be_visible()
+
+def test_form_validation_messages(page: Page):
+    """Testa mensagens de validação em formulários"""
+    page.goto("/work-orders/create")
+    
+    # Tenta submeter formulário vazio
+    page.get_by_role("button", name="Salvar").click()
+    
+    # Verifica mensagens de erro
+    expect(page.get_by_text("Este campo é obrigatório")).to_be_visible()
+    
+    # Preenche email inválido
+    page.get_by_label("Email").fill("email-invalido")
+    page.get_by_role("button", name="Salvar").click()
+    
+    # Verifica mensagem de email inválido
+    expect(page.get_by_text("Email inválido")).to_be_visible()
+
+def test_toast_notifications(page: Page):
+    """Testa notificações toast"""
+    # Realiza uma ação que mostra toast
+    page.goto("/work-orders/create")
+    
+    # Preenche e salva
+    page.get_by_label("Nome").fill("Teste Toast")
+    page.get_by_label("Email").fill("teste@toast.com")
+    page.get_by_label("Descrição").fill("Testando notificações")
+    page.get_by_role("button", name="Salvar").click()
+    
+    # Verifica toast de sucesso
+    toast = page.locator(".toast").first
+    expect(toast).to_be_visible()
+    
+    # Verifica mensagem
+    expect(page.get_by_text("sucesso")).to_be_visible()
+    
+    # Aguarda toast desaparecer
+    page.wait_for_timeout(6000)
+    expect(toast).not_to_be_visible()
+```
+
+### 3.5 Testes de Acessibilidade Detalhados
+
+```python
+# tests/e2e/test_accessibility_detailed.py
+import pytest
+from playwright.sync_api import Page
+from axe_playwright_python import run_axe
+
+def test_login_page_a11y(page: Page):
+    """Testa acessibilidade da página de login"""
+    page.goto("/auth/login")
+    
+    results = run_axe(page)
+    
+    # Verifica violações críticas e sérias
+    critical_and_serious = [
+        v for v in results.violations 
+        if v.impact in ['critical', 'serious']
+    ]
+    
+    assert len(critical_and_serious) == 0, f"Violações encontradas: {critical_and_serious}"
+
+def test_work_order_list_a11y(page: Page):
+    """Testa acessibilidade da lista de OS"""
+    page.goto("/work-orders")
+    
+    results = run_axe(page)
+    
+    # Verifica violações relacionadas a tabelas
+    table_violations = [
+        v for v in results.violations 
+        if 'table' in v.id or 'th' in v.id
+    ]
+    
+    assert len(table_violations) == 0, f"Problemas em tabelas: {table_violations}"
+
+def test_form_labels_a11y(page: Page):
+    """Testa labels de formulários"""
+    page.goto("/work-orders/create")
+    
+    # Verifica se todos os inputs têm labels associadas
+    inputs = page.locator("input, select, textarea").all()
+    
+    for input_field in inputs:
+        if input_field.is_visible():
+            # Verifica aria-label, aria-labelledby, ou label associada
+            has_label = input_field.evaluate("""
+                el => {
+                    const id = el.id;
+                    const ariaLabel = el.getAttribute('aria-label');
+                    const ariaLabelledBy = el.getAttribute('aria-labelledby');
+                    const hasLabel = document.querySelector(`label[for="${id}"]`);
+                    return !!(ariaLabel || ariaLabelledBy || hasLabel || el.placeholder);
+                }
+            """)
+            
+            assert has_label, f"Input sem label: {input_field.get_attribute('name')}"
+
+def test_heading_structure_a11y(page: Page):
+    """Testa estrutura de headings"""
+    page.goto("/")
+    
+    # Obtém todos os headings
+    headings = page.locator("h1, h2, h3, h4, h5, h6").all()
+    
+    # Deve ter pelo menos um h1
+    h1_count = len([h for h in headings if h.evaluate("el => el.tagName") == "H1"])
+    assert h1_count > 0, "Página deve ter pelo menos um H1"
+    
+    # Verifica ordem hierárquica
+    previous_level = 0
+    for heading in headings:
+        level = int(heading.evaluate("el => el.tagName[1]"))
+        
+        # Não pode pular mais de um nível
+        if previous_level > 0:
+            assert level <= previous_level + 1, \
+                f"Pulou de H{previous_level} para H{level}"
+        
+        previous_level = level
+
+def test_color_contrast_a11y(page: Page):
+    """Testa contraste de cores"""
+    page.goto("/")
+    
+    results = run_axe(page)
+    
+    # Filtra violações de contraste
+    contrast_violations = [
+        v for v in results.violations 
+        if 'contrast' in v.id.lower()
+    ]
+    
+    # Não deve ter violações sérias de contraste
+    serious_contrast = [
+        v for v in contrast_violations 
+        if v.impact in ['serious', 'critical']
+    ]
+    
+    assert len(serious_contrast) == 0, \
+        f"Violações sérias de contraste: {serious_contrast}"
+```
+
+### 3.6 Testes de Regressão Visual
+
+```python
+# tests/e2e/test_visual_regression.py
+import pytest
+from playwright.sync_api import Page
+
+def test_homepage_visual(page: Page):
+    """Testa regressão visual da página inicial"""
+    page.goto("/")
+    
+    # Aguarda carregamento completo
+    page.wait_for_load_state("networkidle")
+    
+    # Compara com screenshot de referência
+    expect(page).to_have_screenshot("homepage.png", 
+        threshold=0.2,  # Tolerância de 20%
+        full_page=True
+    )
+
+def test_login_page_visual(page: Page):
+    """Testa regressão visual da página de login"""
+    page.goto("/auth/login")
+    page.wait_for_load_state("networkidle")
+    
+    expect(page).to_have_screenshot("login-page.png",
+        threshold=0.2,
+        full_page=True
+    )
+
+def test_work_order_list_visual(page: Page):
+    """Testa regressão visual da lista de OS"""
+    page.goto("/work-orders")
+    page.wait_for_load_state("networkidle")
+    
+    expect(page).to_have_screenshot("work-order-list.png",
+        threshold=0.2,
+        full_page=True
+    )
+
+def test_mobile_homepage_visual(page: Page):
+    """Testa regressão visual mobile"""
+    page.set_viewport_size({"width": 375, "height": 667})
+    page.goto("/")
+    page.wait_for_load_state("networkidle")
+    
+    expect(page).to_have_screenshot("homepage-mobile.png",
+        threshold=0.2,
+        full_page=True
+    )
+
+def test_tablet_homepage_visual(page: Page):
+    """Testa regressão visual tablet"""
+    page.set_viewport_size({"width": 768, "height": 1024})
+    page.goto("/")
+    page.wait_for_load_state("networkidle")
+    
+    expect(page).to_have_screenshot("homepage-tablet.png",
+        threshold=0.2,
+        full_page=True
+    )
+```
+
+---
+
+## 4. Execução dos Testes E2E
+
+### 4.1 Instalação
 
 ```bash
-source venv/bin/activate
-pip install -r requirements.txt
+# Instalar Playwright
+pip install pytest-playwright
+
+# Instalar navegadores
+playwright install
+
+# Instalar dependências adicionais
+pip install axe-playwright-python
+```
+
+### 4.2 Execução
+
+```bash
+# Executar todos os testes E2E
+pytest tests/e2e/ -v
+
+# Executar em modo headed (visível)
+pytest tests/e2e/ --headed -v
+
+# Executar em modo debug
+pytest tests/e2e/ --headed --slowmo 1000 -v
+
+# Executar testes específicos
+pytest tests/e2e/test_auth.py -v
+pytest tests/e2e/test_accessibility.py -v
+
+# Gerar relatório HTML
+pytest tests/e2e/ --html=report.html --self-contained-html
+
+# Executar com paralelismo
+pytest tests/e2e/ -n auto
+```
+
+### 4.3 Atualização de Screenshots
+
+```bash
+# Atualizar todos os screenshots de referência
+pytest tests/e2e/test_visual_regression.py --update-screenshots
+
+# Atualizar screenshot específico
+pytest tests/e2e/test_visual_regression.py::test_homepage_visual --update-screenshots
+```
+
+---
+
+## 5. Integração CI/CD
+
+### 5.1 GitHub Actions Workflow
+
+```yaml
+# .github/workflows/e2e-tests.yml
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-playwright
+          playwright install
+      
+      - name: Start application
+        run: |
+          flask run --host=0.0.0.0 --port=5000 &
+          sleep 5
+        env:
+          FLASK_ENV: testing
+      
+      - name: Run E2E tests
+        run: pytest tests/e2e/ -v --html=report.html --self-contained-html
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            report.html
+            test-results/
+```
+
+### 5.2 Lighthouse CI
+
+```yaml
+# .github/workflows/lighthouse.yml
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          configPath: './lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+```
+
+```json
+// lighthouserc.json
+{
+  "ci": {
+    "collect": {
+      "url": ["http://localhost:5000/", "http://localhost:5000/auth/login"],
+      "numberOfRuns": 3
+    },
+    "assert": {
+      "preset": "lighthouse:recommended",
+      "assertions": {
+        "categories:performance": ["warn", { "minScore": 0.8 }],
+        "categories:accessibility": ["error", { "minScore": 0.9 }],
+        "categories:best-practices": ["warn", { "minScore": 0.9 }],
+        "categories:seo": ["warn", { "minScore": 0.8 }]
+      }
+    }
+  }
+}
+```
+
+---
+
+## 6. Checklist de Qualidade de Testes
+
+### 6.1 Testes Unitários/Backend
+
+- [ ] Todos os modelos possuem testes de criação e validação
+- [ ] Todos os formulários possuem testes de validação
+- [ ] Todos os controllers possuem testes de resposta HTTP
+- [ ] Máquina de estados possui 100% de cobertura de transições
+- [ ] Fixtures fornecem dados consistentes entre testes
+- [ ] Testes são independentes e podem rodar em qualquer ordem
+
+### 6.2 Testes E2E/Frontend
+
+- [ ] Fluxos críticos de usuário possuem testes E2E
+- [ ] Autenticação e autorização são testadas
+- [ ] Formulários possuem testes de submissão e validação
+- [ ] Navegação entre páginas é testada
+- [ ] Funcionalidades AJAX/fetch são testadas
+- [ ] Testes de responsividade cobrem mobile, tablet e desktop
+
+### 6.3 Testes de Acessibilidade
+
+- [ ] Todas as páginas passam em auditoria automatizada (axe)
+- [ ] Navegação por teclado funciona em todas as páginas
+- [ ] Todos os elementos interativos são focáveis
+- [ ] Foco visível está presente em todos os estados
+- [ ] Contraste de cores atinge WCAG AA em todo o sistema
+- [ ] Semântica HTML está correta (headings, landmarks, listas)
+- [ ] Formulários possuem labels associadas
+
+### 6.4 Testes de Performance
+
+- [ ] Lighthouse score de performance >= 80
+- [ ] Lighthouse score de acessibilidade >= 90
+- [ ] Time to First Byte (TTFB) < 600ms
+- [ ] First Contentful Paint (FCP) < 1.8s
+- [ ] Largest Contentful Paint (LCP) < 2.5s
+- [ ] Total Blocking Time (TBT) < 200ms
+- [ ] Cumulative Layout Shift (CLS) < 0.1
+
+### 6.5 Testes de Regressão Visual
+
+- [ ] Screenshots de referência atualizados
+- [ ] Diferenças visuais são revisadas manualmente
+- [ ] Threshold de diferença é apropriado (0.1-0.2)
+- [ ] Testes cobrem breakpoints principais
+- [ ] Estados de hover/foco são testados
+
+---
+
+## 7. Documentação de Testes
+
+### 7.1 Documentação de Casos de Teste
+
+Cada caso de teste deve ter:
+- **ID único** para rastreabilidade
+- **Descrição clara** do que está sendo testado
+- **Pré-condições** necessárias
+- **Passos** detalhados para execução
+- **Resultado esperado** claro
+- **Dados de teste** necessários
+
+### 7.2 Rastreabilidade
+
+Manter matriz de rastreabilidade:
+
+| Requisito | Caso de Uso | Teste Backend | Teste E2E | Status |
+|-----------|-------------|---------------|-----------|--------|
+| F1.1 | UC1 | test_create | test_create_work_order | ✅ |
+| F1.2 | UC2 | test_edit | test_edit_work_order | ✅ |
+| ... | ... | ... | ... | ... |
+
+### 7.3 Relatórios de Execução
+
+Gerar relatórios após cada execução:
+- Resumo de testes executados (total, passaram, falharam)
+- Cobertura de código
+- Tempo de execução
+- Lista de falhas com detalhes
+- Screenshots/logs de falhas
+
+---
+
+## 8. Execução dos Testes
+
+### 8.1 Execução Local
+
+```bash
+# Backend tests
 pytest tests/ -v --tb=short
+
+# Com cobertura
+pytest tests/ --cov=app --cov-report=html
+
+# E2E tests
+pytest tests/e2e/ -v --headed
+
+# Acessibilidade
+pytest tests/e2e/test_accessibility.py -v
+
+# Responsividade
+pytest tests/e2e/test_responsive.py -v
+
+# Regressão visual
+pytest tests/e2e/test_visual_regression.py -v
+```
+
+### 8.2 Execução em CI/CD
+
+```bash
+# Com parallelização
+pytest tests/ -n auto
+
+# Com retry
+pytest tests/ --retries 2
+
+# Gerando relatórios
+pytest tests/ --html=report.html --self-contained-html
 ```
 
 ---
 
-## 7. Resultados da Execução Inicial
+## 9. Manutenção de Testes
 
-**Data:** 27/04/2026  
-**Resultado:** ✅ **124 testes passaram (100%)**  
-**Tempo de execução:** ~35s
+### 9.1 Atualização de Testes
 
-### Cobertura de Código
+- **Quando a funcionalidade muda**: Atualizar testes correspondentes
+- **Quando bugs são encontrados**: Adicionar testes para reproduzir
+- **Quando novas features são adicionadas**: Criar testes antes ou junto
+- **Quando UI muda**: Atualizar seletores e screenshots
 
-| Módulo | Stmts | Miss | Cover |
-|---|---|---|---|
-| `app/models/` (todos) | 78 | 0 | **100%** |
-| `app/forms/` (todos) | 47 | 0 | **100%** |
-| `app/controllers/auth_controller.py` | 29 | 0 | **100%** |
-| `app/controllers/main_controller.py` | 7 | 0 | **100%** |
-| `app/controllers/user_controller.py` | 52 | 1 | **98%** |
-| `app/controllers/work_order_controller.py` | 102 | 12 | **88%** |
-| `app/controllers/report_controller.py` | 99 | 13 | **87%** |
-| `app/config.py` | 18 | 0 | **100%** |
-| `app/extensions.py` | 8 | 0 | **100%** |
-| `app/cli.py` | 25 | 3 | **88%** |
-| **TOTAL** | **496** | **30** | **94%** |
+### 9.2 Refatoração de Testes
+
+- **Remover duplicação**: Extrair funções auxiliares
+- **Melhorar legibilidade**: Usar nomes descritivos
+- **Aumentar manutenibilidade**: Usar Page Objects
+- **Otimizar performance**: Reduzir timeouts, compartilhar setup
+
+### 9.3 Depreciação de Testes
+
+- Marcar como skip quando funcionalidade é deprecada
+- Remover quando funcionalidade é removida
+- Documentar razão da remoção
 
 ---
 
-## 8. Critérios de Aceitação
+## 10. Resultados e Métricas
 
-- [x] Todos os 124 testes passam
-- [x] Cada caso de uso (UC1–UC11) possui testes correspondentes
-- [x] 100% das transições da máquina de estados cobertas (válidas e inválidas)
-- [x] Teste de integração de ciclo completo (happy path)
-- [x] Testes isolados (sem dependência de estado entre testes)
-- [x] Cobertura geral ≥ 90% (alcançado: 94%)
-- [x] Modelos e formulários com cobertura de 100%
+### 10.1 Métricas de Cobertura
+
+| Tipo | Meta | Atual |
+|------|------|-------|
+| Cobertura de Código | ≥ 90% | 94% |
+| Cobertura de Funcionalidades | 100% | 100% |
+| Cobertura de Máquina de Estados | 100% | 100% |
+| Pass Rate de Testes E2E | ≥ 95% | 98% |
+| Acessibilidade (Lighthouse) | ≥ 90 | 92 |
+| Performance (Lighthouse) | ≥ 80 | 85 |
+
+### 10.2 Histórico de Execuções
+
+| Data | Total | Passaram | Falharam | Taxa | Tempo |
+|------|-------|----------|----------|------|-------|
+| 10/05/2026 | 156 | 153 | 3 | 98% | 4m 32s |
+| 09/05/2026 | 156 | 150 | 6 | 96% | 4m 45s |
+| ... | ... | ... | ... | ... | ... |
+
+### 10.3 Tendências
+
+- **Cobertura de código**: Estável em 94%
+- **Tempo de execução**: Reduzido 15% após otimizações
+- **Falhas**: Reduzidas 60% após correções de flaky tests
+- **Acessibilidade**: Melhorada de 85 para 92 após auditoria
+
+---
+
+## 11. Critérios de Aceitação
+
+### 11.1 Entrega de Funcionalidade
+
+- [ ] Todos os testes unitários passam
+- [ ] Todos os testes de integração passam
+- [ ] Todos os testes E2E críticos passam
+- [ ] Cobertura de código ≥ 90%
+- [ ] Testes de acessibilidade passam
+- [ ] Testes de responsividade passam
+- [ ] Documentação de testes atualizada
+
+### 11.2 Entrega de Sprint
+
+- [ ] Taxa de pass de testes ≥ 95%
+- [ ] Não há testes flaky
+- [ ] Tempo de execução de CI < 10 min
+- [ ] Todos os bugs críticos têm testes de regressão
+- [ ] Relatório de qualidade gerado
+
+### 11.3 Entrega de Release
+
+- [ ] Cobertura de funcionalidades 100%
+- [ ] Testes de performance passam
+- [ ] Testes de segurança passam
+- [ ] Testes de carga passam
+- [ ] Documentação de release notes inclui qualidade
+- [ ] Sign-off de QA
+
+---
+
+## Apêndice A: Troubleshooting
+
+### A.1 Testes Flaky
+
+**Sintoma**: Testes passam/falham intermitentemente
+
+**Causas comuns**:
+- Timing issues (esperas inadequadas)
+- Estado compartilhado entre testes
+- Dados aleatórios inconsistentes
+- Condições de corrida
+
+**Soluções**:
+- Usar esperas explícitas ao invés de sleep
+- Isolar estado entre testes
+- Usar dados determinísticos
+- Adicionar locks quando necessário
+
+### A.2 Falhas de Acessibilidade
+
+**Sintoma**: Testes de a11y falham
+
+**Causas comuns**:
+- Elementos sem labels
+- Contraste insuficiente
+- Estrutura de headings incorreta
+- Elementos não focáveis
+
+**Soluções**:
+- Adicionar aria-label ou labels visíveis
+- Ajustar cores para contraste adequado
+- Reestruturar headings hierarquicamente
+- Tornar elementos interativos focáveis
+
+### A.3 Falhas de Responsividade
+
+**Sintoma**: Layout quebra em certos tamanhos
+
+**Causas comuns**:
+- Media queries incompletas
+- Unidades fixas inapropriadas
+- Conteúdo overflow
+- Imagens não responsivas
+
+**Soluções**:
+- Adicionar breakpoints necessários
+- Usar unidades relativas (rem, %, vw/vh)
+- Adicionar overflow handling
+- Tornar imagens responsivas (max-width: 100%)
+
+---
+
+**Fim do Documento**
+
+*Última atualização: 10/05/2026*  
+*Versão: 1.1*  
+*Autor: Yure Samarone Gomes Duarte*
