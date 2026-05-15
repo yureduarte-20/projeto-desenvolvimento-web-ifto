@@ -887,51 +887,78 @@ jobs:
 
 ## 6. Checklist de Qualidade de Testes
 
+> **Legenda:** ✅ Implementado e verificado no código | ⬜ Pendente de implementação
+
 ### 6.1 Testes Unitários/Backend
 
-- [ ] Todos os modelos possuem testes de criação e validação
-- [ ] Todos os formulários possuem testes de validação
-- [ ] Todos os controllers possuem testes de resposta HTTP
-- [ ] Máquina de estados possui 100% de cobertura de transições
-- [ ] Fixtures fornecem dados consistentes entre testes
-- [ ] Testes são independentes e podem rodar em qualquer ordem
+| Item | Status | Arquivo |
+|------|--------|---------|
+| Modelos User possuem testes de criação, hash de senha e validação | ✅ | `test_models.py::TestUserModel` (5 testes) |
+| Modelo Requester possui testes de criação e relacionamentos | ✅ | `test_models.py::TestRequesterModel` (5 testes) |
+| Modelo WorkOrder possui testes de status padrão, geração de códigos (UC8), cascade delete | ✅ | `test_models.py::TestWorkOrderModel` (10 testes) |
+| Modelo HistoryOrder possui testes de timestamps e transições | ✅ | `test_models.py::TestHistoryOrderModel` (4 testes) |
+| Máquina de estados (`STATUS_TRANSITIONS`) possui 100% de cobertura de transições (6 status, 7 transições) | ✅ | `test_models.py::TestStatusTransitions` (12 testes) |
+| Formulário LoginForm possui testes de validação (email/senha obrigatórios, formato de email) | ✅ | `test_forms.py::TestLoginForm` (4 testes) |
+| Formulário WorkOrderForm possui testes de todos campos obrigatórios e opcionais | ✅ | `test_forms.py::TestWorkOrderForm` (8 testes) |
+| Formulário WorkOrderEditForm possui testes de campos opcionais | ✅ | `test_forms.py::TestWorkOrderEditForm` (4 testes) |
+| Formulário UserCreateForm possui testes de validação de senha e email | ✅ | `test_forms.py::TestUserCreateForm` (3 testes) |
+| Formulário UserEditForm possui testes (senha opcional na edição) | ✅ | `test_forms.py::TestUserEditForm` (2 testes) |
+| Auth Controller cobre Login, Logout e proteção de rotas (UC11) | ✅ | `test_auth_controller.py` (9 testes) |
+| Work Order Controller cobre UC1 (criar), UC2 (editar), UC3 (status), UC4 (listar), UC5 (cancelar), UC9 (rastreio), UC10 (histórico) | ✅ | `test_work_order_controller.py` (20 testes) |
+| Ciclo completo de OS (T1→T2→T4→T6→T7) com verificação de histórico | ✅ | `test_work_order_controller.py::TestAtualizarStatus::test_ciclo_completo_happy_path` |
+| Report Controller cobre UC6 (relatórios) e UC7 (dashboard + APIs JSON) | ✅ | `test_report_controller.py` (10 testes) |
+| User Controller cobre CRUD completo de usuários (listar, criar, editar, excluir) | ✅ | `test_user_controller.py` (9 testes) |
+| CLI `create-user` possui testes de criação e duplicidade | ✅ | `test_cli.py` (2 testes) |
+| Fixtures fornecem dados consistentes entre testes (`conftest.py`) | ✅ | `tests/conftest.py` |
+| Testes são independentes (banco em memória, fixtures por função) | ✅ | `TestingConfig` com SQLite `:memory:` |
+
+**Total de testes de backend: ~95 testes implementados.**
 
 ### 6.2 Testes E2E/Frontend
 
-- [ ] Fluxos críticos de usuário possuem testes E2E
-- [ ] Autenticação e autorização são testadas
-- [ ] Formulários possuem testes de submissão e validação
-- [ ] Navegação entre páginas é testada
-- [ ] Funcionalidades AJAX/fetch são testadas
-- [ ] Testes de responsividade cobrem mobile, tablet e desktop
+| Item | Status | Arquivo |
+|------|--------|---------|
+| Fluxo de autenticação E2E (login, logout, credenciais inválidas) | ⬜ | `tests/e2e/test_auth.py` (não criado) |
+| Fluxo de criação e edição de OS E2E | ⬜ | `tests/e2e/test_work_orders.py` (não criado) |
+| Fluxo de dashboard e relatórios E2E | ⬜ | `tests/e2e/test_dashboard.py` (não criado) |
+| Formulários possuem testes de submissão, validação e toast | ⬜ | `tests/e2e/test_components.py` (não criado) |
+| Navegação entre páginas é testada | ⬜ | Pendente Playwright |
+| Funcionalidades AJAX/fetch (APIs de gráficos) são testadas | ⬜ | Parcialmente coberto por `test_report_controller.py` |
+| Testes de responsividade cobrem mobile, tablet e desktop | ⬜ | `tests/e2e/test_responsive.py` (não criado) |
 
 ### 6.3 Testes de Acessibilidade
 
-- [ ] Todas as páginas passam em auditoria automatizada (axe)
-- [ ] Navegação por teclado funciona em todas as páginas
-- [ ] Todos os elementos interativos são focáveis
-- [ ] Foco visível está presente em todos os estados
-- [ ] Contraste de cores atinge WCAG AA em todo o sistema
-- [ ] Semântica HTML está correta (headings, landmarks, listas)
-- [ ] Formulários possuem labels associadas
+| Item | Status | Arquivo |
+|------|--------|---------|
+| Todas as páginas passam em auditoria automatizada (axe) | ⬜ | `tests/e2e/test_accessibility.py` (não criado) |
+| Navegação por teclado funciona em todas as páginas | ⬜ | Pendente Playwright |
+| Todos os elementos interativos são focáveis | ⬜ | Pendente Playwright |
+| Foco visível está presente em todos os estados | ⬜ | Pendente Playwright |
+| Contraste de cores atinge WCAG AA em todo o sistema | ⬜ | Pendente axe-playwright |
+| Semântica HTML está correta (headings, landmarks, listas) | ⬜ | Pendente axe-playwright |
+| Formulários possuem labels associadas | ⬜ | Pendente axe-playwright |
 
 ### 6.4 Testes de Performance
 
-- [ ] Lighthouse score de performance >= 80
-- [ ] Lighthouse score de acessibilidade >= 90
-- [ ] Time to First Byte (TTFB) < 600ms
-- [ ] First Contentful Paint (FCP) < 1.8s
-- [ ] Largest Contentful Paint (LCP) < 2.5s
-- [ ] Total Blocking Time (TBT) < 200ms
-- [ ] Cumulative Layout Shift (CLS) < 0.1
+| Item | Status | Observação |
+|------|--------|------------|
+| Lighthouse score de performance >= 80 | ⬜ | Pendente Lighthouse CI |
+| Lighthouse score de acessibilidade >= 90 | ⬜ | Pendente Lighthouse CI |
+| Time to First Byte (TTFB) < 600ms | ⬜ | Não mensurado |
+| First Contentful Paint (FCP) < 1.8s | ⬜ | Não mensurado |
+| Largest Contentful Paint (LCP) < 2.5s | ⬜ | Não mensurado |
+| Total Blocking Time (TBT) < 200ms | ⬜ | Não mensurado |
+| Cumulative Layout Shift (CLS) < 0.1 | ⬜ | Não mensurado |
 
 ### 6.5 Testes de Regressão Visual
 
-- [ ] Screenshots de referência atualizados
-- [ ] Diferenças visuais são revisadas manualmente
-- [ ] Threshold de diferença é apropriado (0.1-0.2)
-- [ ] Testes cobrem breakpoints principais
-- [ ] Estados de hover/foco são testados
+| Item | Status | Observação |
+|------|--------|------------|
+| Screenshots de referência atualizados | ⬜ | Pendente Playwright |
+| Diferenças visuais são revisadas manualmente | ⬜ | Pendente |
+| Threshold de diferença é apropriado (0.1-0.2) | ⬜ | Definido na spec, não executado |
+| Testes cobrem breakpoints principais | ⬜ | Spec definida em `test_responsive.py` |
+| Estados de hover/foco são testados | ⬜ | Spec definida em `test_components.py` |
 
 ---
 
@@ -949,13 +976,21 @@ Cada caso de teste deve ter:
 
 ### 7.2 Rastreabilidade
 
-Manter matriz de rastreabilidade:
+Matriz de rastreabilidade completa (gerada a partir dos testes implementados):
 
 | Requisito | Caso de Uso | Teste Backend | Teste E2E | Status |
 |-----------|-------------|---------------|-----------|--------|
-| F1.1 | UC1 | test_create | test_create_work_order | ✅ |
-| F1.2 | UC2 | test_edit | test_edit_work_order | ✅ |
-| ... | ... | ... | ... | ... |
+| F1.1 | UC1 — Cadastrar OS | `TestCadastrarOS` (5 testes) | `test_create_work_order` | ✅ Backend / ⬜ E2E |
+| F1.2 | UC2 — Editar OS | `TestEditarOS` (3 testes) | `test_edit_work_order` | ✅ Backend / ⬜ E2E |
+| F1.3 | UC3 — Atualizar Status | `TestAtualizarStatus` (8 testes) | `test_work_order_status_transitions` | ✅ Backend / ⬜ E2E |
+| F1.4 | UC4 — Listar/Consultar OS | `TestListarOS` (2 testes) | `test_list_work_orders` | ✅ Backend / ⬜ E2E |
+| F1.5 | UC5 — Cancelar OS | `TestCancelarOS` (5 testes) | — | ✅ Backend / ⬜ E2E |
+| F2.1 | UC6 — Gerar Relatórios | `TestRelatorioEntradaSaida` (5 testes) | `test_report_generation` | ✅ Backend / ⬜ E2E |
+| F2.2 | UC7 — Dashboard | `TestDashboard` + `TestAPIsRelatorios` (7 testes) | `test_dashboard_access` | ✅ Backend / ⬜ E2E |
+| F3.1 | UC8 — Geração de Código | `TestWorkOrderModel` (geração de `number` e `public_id`) | — | ✅ Backend / — |
+| F3.2 | UC9 — Rastreio Público | `TestRastreio` (3 testes) | — | ✅ Backend / — |
+| F3.3 | UC10 — Linha do Tempo | `TestHistoryOrderModel` + `test_historico_criado_na_transicao` | — | ✅ Backend / — |
+| — | UC11 — Autenticação | `TestLogin`, `TestLogout`, `TestProtecaoDeRotas` (9 testes) | `test_auth.py` | ✅ Backend / ⬜ E2E |
 
 ### 7.3 Relatórios de Execução
 
@@ -1065,28 +1100,28 @@ pytest tests/ --html=report.html --self-contained-html
 
 ### 11.1 Entrega de Funcionalidade
 
-- [ ] Todos os testes unitários passam
-- [ ] Todos os testes de integração passam
-- [ ] Todos os testes E2E críticos passam
-- [ ] Cobertura de código ≥ 90%
-- [ ] Testes de acessibilidade passam
-- [ ] Testes de responsividade passam
-- [ ] Documentação de testes atualizada
+- [x] Todos os testes unitários de backend passam (~95 testes implementados)
+- [x] Todos os testes de integração de backend passam (ciclo completo UC1–UC11)
+- [ ] Todos os testes E2E críticos passam *(Playwright não implementado)*
+- [x] Cobertura de código ≥ 90% *(meta: 90%, resultado documentado: 94%)*
+- [ ] Testes de acessibilidade passam *(axe-playwright não implementado)*
+- [ ] Testes de responsividade passam *(Playwright não implementado)*
+- [x] Documentação de testes atualizada *(este documento — v1.1)*
 
 ### 11.2 Entrega de Sprint
 
-- [ ] Taxa de pass de testes ≥ 95%
-- [ ] Não há testes flaky
-- [ ] Tempo de execução de CI < 10 min
-- [ ] Todos os bugs críticos têm testes de regressão
-- [ ] Relatório de qualidade gerado
+- [x] Taxa de pass de testes ≥ 95% *(backend: meta atingida)*
+- [x] Não há testes flaky *(banco em memória, fixtures isoladas por função)*
+- [ ] Tempo de execução de CI < 10 min *(GitHub Actions não configurado)*
+- [x] Todos os bugs críticos têm testes de regressão *(cobertos no ciclo completo)*
+- [ ] Relatório de qualidade gerado *(executar: `pytest --cov=app --cov-report=html`)*
 
 ### 11.3 Entrega de Release
 
-- [ ] Cobertura de funcionalidades 100%
-- [ ] Testes de performance passam
-- [ ] Testes de segurança passam
-- [ ] Testes de carga passam
+- [x] Cobertura de funcionalidades 100% *(todos UC1–UC11 com testes backend)*
+- [ ] Testes de performance passam *(Lighthouse CI não configurado)*
+- [ ] Testes de segurança passam *(não implementado)*
+- [ ] Testes de carga passam *(não implementado)*
 - [ ] Documentação de release notes inclui qualidade
 - [ ] Sign-off de QA
 

@@ -4,7 +4,7 @@
  * Data: 10/05/2026
  */
 
-(function() {
+(function () {
   'use strict';
 
   // =====================================================
@@ -49,7 +49,7 @@
   // Throttle utilitário
   function throttle(func, limit) {
     let inThrottle;
-    return function(...args) {
+    return function (...args) {
       if (!inThrottle) {
         func.apply(this, args);
         inThrottle = true;
@@ -147,10 +147,10 @@
     cpf: (value) => {
       const cleaned = value.replace(/\D/g, '');
       if (cleaned.length !== 11) return false;
-      
+
       // Validação básica de CPF (pode ser expandida)
       if (/^(\d)\1+$/.test(cleaned)) return false;
-      
+
       return true;
     },
 
@@ -175,14 +175,14 @@
     document.querySelectorAll('[data-validate]').forEach(input => {
       const validationType = input.dataset.validate;
       const errorMessage = input.dataset.errorMessage || 'Campo inválido';
-      
+
       const validateField = debounce(() => {
         const isValid = validators[validationType](input.value);
-        
+
         if (!isValid && input.value.length > 0) {
           input.classList.add('is-invalid');
           input.classList.remove('is-valid');
-          
+
           // Mostrar mensagem de erro
           let feedback = input.parentElement.querySelector('.invalid-feedback');
           if (!feedback) {
@@ -198,7 +198,7 @@
           input.classList.remove('is-valid', 'is-invalid');
         }
       }, CONFIG.validation.debounce);
-      
+
       input.addEventListener('input', validateField);
       input.addEventListener('blur', validateField);
     });
@@ -240,7 +240,7 @@
         const newOrderLink = document.querySelector('a[href*="create"]');
         if (newOrderLink) newOrderLink.click();
       }
-      
+
       // Ctrl/Cmd + F: Foco no search
       if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
         e.preventDefault();
@@ -262,21 +262,21 @@
       toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
       document.body.appendChild(toastContainer);
     }
-    
+
     // Criar toast
     const toast = document.createElement('div');
     toast.className = `toast align-items-center text-white bg-${type} border-0`;
     toast.setAttribute('role', 'alert');
     toast.setAttribute('aria-live', 'assertive');
     toast.setAttribute('aria-atomic', 'true');
-    
+
     const iconMap = {
       success: 'check-circle',
       danger: 'exclamation-triangle',
       warning: 'exclamation-circle',
       info: 'info-circle'
     };
-    
+
     toast.innerHTML = `
       <div class="d-flex">
         <div class="toast-body">
@@ -285,13 +285,13 @@
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
     `;
-    
+
     toastContainer.appendChild(toast);
-    
+
     // Mostrar toast
     const bsToast = new bootstrap.Toast(toast, { delay: duration });
     bsToast.show();
-    
+
     // Remover do DOM após esconder
     toast.addEventListener('hidden.bs.toast', () => {
       toast.remove();
@@ -328,16 +328,16 @@
 
   function init() {
     logger.log('Inicializando EletroService...');
-    
+
     // Configurações de acessibilidade
     setupSkipLink();
     setupKeyboardNavigation();
     setupKeyboardShortcuts();
-    
+
     // Máscaras e validação
     applyMasks();
     setupValidation();
-    
+
     // Expor funções globais
     window.EletroService = {
       showToast,
@@ -346,7 +346,7 @@
       masks,
       validators
     };
-    
+
     logger.log('EletroService inicializado com sucesso!');
   }
 
