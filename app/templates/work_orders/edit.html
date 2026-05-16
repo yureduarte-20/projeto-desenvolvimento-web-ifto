@@ -85,13 +85,12 @@
                             {% endfor %}
                         </div>
 
-                        <!-- Campos Financeiros (Aparecem fora de Em Orçamento) -->
-                        {% if order.status != 'Em Orçamento' %}
+                        <!-- Campos Financeiros -->
                         <div class="col-md-6">
                             {{ form.labor_cost.label(class="form-label fw-bold") }}
                             <div class="input-group">
                                 <span class="input-group-text">R$</span>
-                                {{ form.labor_cost(class="form-control " ~ ("is-invalid" if form.labor_cost.errors else ""), type="number", step="0.01", readonly=is_terminal) }}
+                                {{ form.labor_cost(class="form-control " ~ ("is-invalid" if form.labor_cost.errors else ""), type="number", step="0.01", readonly=order.status not in ['Em Orçamento', 'Em Manutenção']) }}
                             </div>
                             {% for error in form.labor_cost.errors %}
                                 <div class="text-danger small mt-1">{{ error }}</div>
@@ -101,14 +100,13 @@
                             {{ form.final_price.label(class="form-label fw-bold") }}
                             <div class="input-group">
                                 <span class="input-group-text">R$</span>
-                                {{ form.final_price(class="form-control " ~ ("is-invalid" if form.final_price.errors else ""), type="number", step="0.01", readonly=is_terminal) }}
+                                {{ form.final_price(class="form-control " ~ ("is-invalid" if form.final_price.errors else ""), type="number", step="0.01", readonly=order.status not in ['Em Orçamento', 'Em Manutenção']) }}
                             </div>
                             {% for error in form.final_price.errors %}
                                 <div class="text-danger small mt-1">{{ error }}</div>
                             {% endfor %}
                             <div class="form-text small">Preço total incluindo peças e mão de obra.</div>
                         </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>

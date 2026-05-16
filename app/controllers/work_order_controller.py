@@ -109,8 +109,8 @@ def edit(id):
         order.description = form.description.data
         order.estimated_delivery_date = form.estimated_delivery_date.data
 
-        # Campos financeiros disponíveis a partir de Em Manutenção
-        if order.status != 'Em Orçamento':
+        # Campos financeiros disponíveis para edição nos status de Orçamento e Manutenção
+        if order.status in ['Em Orçamento', 'Em Manutenção']:
             order.final_price = form.final_price.data
             order.labor_cost = form.labor_cost.data
 

@@ -142,6 +142,9 @@ Abaixo estão detalhadas as especificações com base na arquitetura descrita e 
                     order.is_canceled = True
                     order.cancelation_reason = form.cancelation_reason.data
 
+                Se order.status estiver em ['Em Orçamento', 'Em Manutenção']:
+                    Atualizar order.labor_cost e order.final_price
+
                 Se houve mudança de status ou nota:
                     HistoryOrder.save_transition(order.id, old_status, new_status, desc)
 

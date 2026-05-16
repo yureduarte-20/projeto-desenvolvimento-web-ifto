@@ -132,3 +132,6 @@
 - `app/templates/work_orders/list.html` & `app/templates/users/list.html`: Implementado o fallback amigável `.empty-state`.
 - `app/templates/work_orders/create.html` & `app/templates/work_orders/edit.html`: Adicionados atributos `data_validate` para validação client-side via WTForms.
 - `app/templates/tracking/result.html`: Cores de `Aguardando Retirada` e Timeline (`border-accent`) refatoradas para usar o Laranja (accent color).
+
+#### Modelagem de Regras de Negócio
+- **Campos Financeiros Restritos:** A edição do Custo de Mão de Obra e Preço Final foi limitada estritamente aos status `Em Orçamento` e `Em Manutenção`, garantindo que os valores não sejam alterados acidentalmente após o fechamento do acordo (Aguardando Pagamento, Retirada ou Finalizado).

@@ -960,13 +960,11 @@ async function updateQuickMetrics() {
 
 **Renderização de Campos Condicionais:**
 ```html
-<!-- Campos financeiros aparecem apenas após "Em Orçamento" -->
-{% if order.status != 'Em Orçamento' %}
+<!-- Campos financeiros disponíveis para edição apenas nos status iniciais -->
 <div class="col-md-6">
     <label class="form-label">Valor da Mão de Obra</label>
-    <input type="number" class="form-control" name="labor_cost" value="{{ order.labor_cost }}">
+    <input type="number" class="form-control" name="labor_cost" value="{{ order.labor_cost }}" readonly="order.status not in ['Em Orçamento', 'Em Manutenção']">
 </div>
-{% endif %}
 ```
 
 ### 12.2 Renderização de Listas
