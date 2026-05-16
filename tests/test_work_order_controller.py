@@ -480,29 +480,29 @@ class TestExcluirOS:
 
 
 # ============================================================================
-# UC9 & UC10 — Consulta por Rastreio e Linha do Tempo
+# UC9 & UC10 — Consulta por Rastreio e Linha do Tempo (migrado para tracking_controller)
 # ============================================================================
 
 class TestRastreio:
-    """Testes do módulo de rastreio público (UC9 e UC10)."""
+    """Testes regressivos do módulo de rastreio — aponta para o novo endpoint público."""
 
-    def test_uc9_rastrear_por_public_id(self, authenticated_client, sample_work_order):
-        """UC9/F3.2: Consulta com public_id válido deve retornar dados da OS."""
-        response = authenticated_client.get(
-            f'/ordens/rastreio/{sample_work_order.public_id}'
+    def test_uc9_rastrear_por_public_id(self, client, sample_work_order):
+        """UC9/F3.2: Endpoint público /rastreio/search deve retornar 200 com código válido."""
+        response = client.get(
+            f'/rastreio/search?code={sample_work_order.public_id}'
         )
         assert response.status_code == 200
 
-    def test_uc9_rastrear_id_inexistente_404(self, authenticated_client):
-        """UC9: Consulta com public_id inexistente deve retornar 404."""
-        response = authenticated_client.get('/ordens/rastreio/uuid-invalido-99999')
-        assert response.status_code == 404
+    def test_uc9_rastrear_id_inexistente_exibe_erro(self, client, db):
+        """UC9: Código inexistente deve retornar 200 com mensagem de erro (não 404)."""
+        response = client.get('/rastreio/search?code=uuid-invalido-99999')
+        assert response.status_code == 200
+        assert 'não encontrad' in response.data.decode('utf-8').lower()
 
-    def test_uc10_historico_exibido(self, authenticated_client, sample_work_order):
-        """UC10/F3.3: A página de rastreio deve conter dados do histórico."""
-        response = authenticated_client.get(
-            f'/ordens/rastreio/{sample_work_order.public_id}'
+    def test_uc10_historico_exibido(self, client, sample_work_order):
+        """UC10/F3.3: A página de resultado deve conter dados do histórico."""
+        response = client.get(
+            f'/rastreio/search?code={sample_work_order.public_id}'
         )
         html = response.data.decode('utf-8')
-        # Deve conter referência ao status
         assert 'Em Orçamento' in html or 'Abertura' in html

@@ -54,7 +54,7 @@
                             <div class="btn-group" role="group">
                                 <!-- Botão de Copiar Link -->
                                 <button type="button" class="btn btn-sm btn-outline-primary" 
-                                        onclick="copyTrackingLink('{{ url_for('work_orders.track', public_id=order.public_id, _external=True) }}')" 
+                                        onclick="copyTrackingLink('{{ url_for('tracking.search', code=order.public_id, _external=True) }}')" 
                                         title="Copiar Link de Rastreio">
                                     <i class="bi bi-link-45deg"></i>
                                 </button>

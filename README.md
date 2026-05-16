@@ -8,6 +8,7 @@ Este é um projeto base de uma aplicação web desenvolvida em Python e Flask, e
 - **Flask**: Microframework web
 - **Flask-SQLAlchemy**: ORM (Object-Relational Mapping)
 - **Flask-Migrate** (Alembic): Gerenciamento de migrações do banco de dados
+- **Flask-Caching**: Cache in-memory (SimpleCache, TTL 5min) para APIs de gráficos
 - **Jinja2**: Motor de templates nativo do Flask
 - **Bootstrap 5**: Framework CSS para interface visual (carregado via CDN)
 - **SQLite**: Banco de dados relacional padrão (fácil para desenvolvimento)
@@ -21,14 +22,22 @@ A aplicação está contida no pacote `app`:
 ```
 projeto-desen-web/
 ├── app/                  # Diretório principal da aplicação
-│   ├── models/           # MODEL: Classes de banco de dados (User)
+│   ├── models/           # MODEL: Classes de banco de dados (User, WorkOrder, ...)
 │   ├── controllers/      # CONTROLLER: Lógica de negócio e rotas (Blueprints)
+│   │   ├── work_order_controller.py  # UC1–UC5 (autenticado)
+│   │   ├── tracking_controller.py    # UC9–UC10 (público, sem login)
+│   │   ├── report_controller.py      # UC6–UC7 + cache de APIs
+│   │   └── auth_controller.py        # UC11 — Login/Logout
 │   ├── templates/        # VIEW: Arquivos HTML renderizados pelo Jinja2
+│   │   ├── tracking/     # Módulo público de rastreamento (base_public.html)
+│   │   └── ...           # Demais módulos
 │   ├── static/           # Arquivos estáticos (CSS, JS, Imagens)
-│   ├── config.py         # Configurações de ambiente
-│   ├── extensions.py     # Inicialização das extensões (db, migrate)
+│   ├── config.py         # Configurações de ambiente (incl. CACHE_TYPE)
+│   ├── extensions.py     # Inicialização das extensões (db, migrate, cache)
 │   └── __init__.py       # Factory de criação do aplicativo
 ├── migrations/           # Histórico de migrações (Gerado pelo Flask-Migrate)
+├── tests/                # Suíte de testes automatizados (132 testes, 96% cobertura)
+├── docs/                 # Documentação (requisitos, specs, refactor.md)
 ├── requirements.txt      # Dependências Python
 ├── docker-compose.yml    # Orquestração Docker
 ├── Dockerfile            # Imagem Docker
@@ -113,7 +122,7 @@ docker compose exec web flask create-user "Nome" "email@exemplo.com" "senha"
 
 ## Como Executar os Testes
 
-O projeto possui uma suíte de **124 testes automatizados** com cobertura de 94%. Para mais detalhes, consulte o [Plano de Testes](docs/testing.md).
+O projeto possui uma suíte de **132 testes automatizados** com cobertura de 96%. Para mais detalhes, consulte o [Plano de Testes](docs/testing.md).
 
 ### Via Docker Compose (Recomendado)
 

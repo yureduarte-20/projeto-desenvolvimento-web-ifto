@@ -99,103 +99,124 @@ Abaixo estão detalhadas as especificações com base na arquitetura descrita e 
 
     /app/controllers/work_order_controller.py
     - ação: modificar
-    - descrição: Criação de endpoint para receber requisição de cadastro da OS, efetivar a persistência e engatilhar primeiro histórico.
+    - descrição: Cadastro de OS (UC1). Cria Requester se não existir, instancia WorkOrder,
+      chama generate_public_id() e registra histórico via save_transition(). Commit único e atômico.
     - pseudocódigo:
-        Declarar Blueprint work_order_bp
-        
-        @work_order_bp.route('/create', methods=['POST'])
+        @work_order_bp.route('/nova', methods=['GET', 'POST'])
         @login_required
-        Função create_work_order():
-            Ler carga útil do formulário enviado no request
-            Validar dados obrigatórios (requester_id, description)
-            
-            Instanciar WorkOrder com status forçado para 'Em Orçamento' e atributos fornecidos
-            Chamar método work_order.generate_public_id()
-            Salvar WorkOrder no banco de dados e dar commit
-            
-            Recuperar o work_order.id recém inserido
-            Chamar HistoryOrder.save_transition(work_order.id, Null, 'Em Orçamento', 'Ordem de serviço aberta na triagem')
-            
-            Disparar flash message visual de sucesso
-            Redirecionar HTTP para a rota de visualização/listagem de OS
+        Função create():
+            Validar formulário (WorkOrderForm)
+            requester = Buscar por email; criar se não existir
+            db.session.flush()  # gera requester.id sem commit
+
+            work_order = WorkOrder(requester_id, description, status='Em Orçamento')
+            work_order.generate_public_id()
+            db.session.add(work_order)
+            db.session.flush()  # gera work_order.id
+
+            HistoryOrder.save_transition(work_order.id, None, 'Em Orçamento', 'Abertura da Ordem de Serviço')
+            db.session.commit()  # commit único e atômico
 
     /app/controllers/work_order_controller.py
     - ação: modificar
-    - descrição: Manipulador para atualização de status, com forte validação na máquina de estados antes da persistência.
+    - descrição: Edição e transição de status (UC2, UC3, UC5). STATUS_TRANSITIONS define
+      as transições válidas. save_transition() registra historico; commit único no final.
     - pseudocódigo:
-        @work_order_bp.route('/<id>/update-status', methods=['POST'])
+        @work_order_bp.route('/<int:id>/editar', methods=['GET', 'POST'])
         @login_required
-        Função update_work_order_status(id):
-            Extrair 'novo_status' e opcional 'observacao' do request
-            Buscar WorkOrder no banco utilizando id
-            Abortar com erro 404 se não existir
-            
-            estado_atual = work_order.status
-            Definir dicionário com transições válidas:
-                'Em Orçamento': ['Em Manutenção', 'Cancelado']
-                'Em Manutenção': ['Aguardando Pagamento', 'Cancelado']
-                'Aguardando Pagamento': ['Aguardando Retirada']
-                'Aguardando Retirada': ['Finalizado']
-            
-            Se 'novo_status' não existir na lista de transições permitidas para estado_atual:
-                Retornar erro de validação ("Transição de status não permitida")
-                
-            work_order.status = novo_status
-            Se novo_status for igual a 'Cancelado':
-                work_order.is_canceled = True
-                work_order.cancelation_reason = observacao
-                
-            Persistir alterações em work_order (db.session.commit())
-            Chamar HistoryOrder.save_transition(work_order.id, estado_atual, novo_status, observacao)
-            
-            Disparar flash message visual informando mudança de status
-            Redirecionar HTTP para página de detalhes da Ordem de Serviço atualizada
+        Função edit(id):
+            order = WorkOrder.query.get_or_404(id)
+            config = STATUS_TRANSITIONS[order.status]
+            is_terminal = config.next is None and not config.can_cancel
+
+            Se form.validate_on_submit() e não is_terminal:
+                action = request.form.get('action')  # 'save' | 'advance' | 'cancel'
+                old_status = order.status
+
+                Se action == 'advance' e config.next:
+                    order.status = config.next
+                    Se novo status == 'Finalizado': order.delivered_at = now()
+
+                Se action == 'cancel' e config.can_cancel:
+                    order.status = 'Cancelado'
+                    order.is_canceled = True
+                    order.cancelation_reason = form.cancelation_reason.data
+
+                Se houve mudança de status ou nota:
+                    HistoryOrder.save_transition(order.id, old_status, new_status, desc)
+
+                db.session.commit()  # commit único e atômico
+
+    /app/controllers/report_controller.py
+    - ação: modificar
+    - descrição: Helper _parse_date_range() elimina duplicação. @cache.cached(timeout=300)
+      nas APIs de gráficos evita recálculo por 5 minutos (SimpleCache in-memory).
+    - pseudocódigo:
+        def _parse_date_range(req):
+            Ler 'start_date' e 'end_date' dos query params
+            Aplicar padrão de 30 dias se ausentes ou inválidos
+            end_date.replace(hour=23, minute=59, second=59)
+            Retornar (start_date, end_date)
+
+        @bp.route('/api/status-data')
+        @login_required
+        @cache.cached(timeout=300, key_prefix='api_status_data')
+        Função api_status_data():
+            Consultar WorkOrder agrupado por status
+            Retornar JSON para gráfico de pizza (Chart.js)
+
+        @bp.route('/api/daily-data')
+        @login_required
+        @cache.cached(timeout=300, key_prefix='api_daily_data')
+        Função api_daily_data():
+            Consultar WorkOrder agrupado por dia (últimos 7 dias)
+            Preencher dias sem OS com count=0
+            Retornar JSON para gráfico de linha (Chart.js)
 
     /app/controllers/tracking_controller.py
     - ação: criar
-    - descrição: Implementação do endpoint de transparência pública. Não requer autenticação de login.
+    - descrição: Endpoint público UC9/UC10. Sem @login_required. Código via query param.
+      Retorna index.html (formulário) ou result.html (status + timeline).
     - pseudocódigo:
-        Declarar Blueprint tracking_bp
-        
-        @tracking_bp.route('/search', methods=['GET'])
-        Função search_tracking():
-            Ler query parameter 'code' do request (GET)
-            
-            Se 'code' for vazio:
-                Renderizar template 'tracking/index.html' com mensagem de erro "Insira o código."
-                
-            work_order = Buscar objeto da tabela WorkOrder com filtro (public_id == 'code')
-            
-            Se work_order não for encontrado:
-                Renderizar template 'tracking/index.html' com mensagem "OS não encontrada."
-                
-            history = Buscar objetos da tabela HistoryOrder vinculados a work_order.id, com ordenação descending por changed_at
-            
-            Retornar render_template apontando para 'tracking/result.html', repassando os objetos work_order e history no contexto.
+        Blueprint tracking, url_prefix='/rastreio'
+
+        @tracking_bp.route('/search')  # GET, sem @login_required
+        Função search():
+            code = request.args.get('code', '').strip()
+
+            Se code vazio:
+                Renderizar tracking/index.html (formulário)
+
+            work_order = WorkOrder.query.filter_by(public_id=code).first()
+
+            Se work_order é None:
+                Renderizar tracking/index.html com mensagem de erro
+
+            history = sorted(work_order.history, key=changed_at, reverse=True)
+            Renderizar tracking/result.html com work_order e history
+
+    /app/templates/base_public.html
+    - ação: criar
+    - descrição: Layout base para área pública (Bootstrap 5, navbar mínima, sem sidebar admin).
 
     /app/templates/tracking/index.html
     - ação: criar
-    - descrição: Página de entrada do tracking (landing page do cliente), onde digita o código único que recebeu.
+    - descrição: Formulário GET com campo 'code' (UC9). Exibe alerta de erro se código inválido.
     - pseudocódigo:
-        Estender estrutura de "base_public.html"
-        Construir contêiner centralizado Bootstrap na view
-        Inserir bloco HTML <form> com método GET apontando action para '/tracking/search'
-        Adicionar <input type="text" name="code" required> estilizado
-        Adicionar <button type="submit"> contendo o texto "Rastrear Minha OS"
+        Estender base_public.html
+        <form method="GET" action="/rastreio/search">
+            <input type="text" name="code" required>
+            <button type="submit">Rastrear Minha OS</button>
 
     /app/templates/tracking/result.html
     - ação: criar
-    - descrição: Página final que o cliente consome para ver situação (UC9) e linha do tempo (UC10) agregada.
+    - descrição: Exibe status atual com badge colorido (UC9) e linha do tempo (UC10).
     - pseudocódigo:
-        Estender estrutura de "base_public.html"
-        Montar cabeçalho exibindo variável "work_order.public_id"
-        Aplicar lógica de if/else Jinja2 para atribuir badge Bootstrap de cor específica baseado em "work_order.status"
-        
-        Criar div de visualização da Linha do Tempo:
-            Aplicar bloco for do Jinja2: "for item in history"
-                Dentro do loop, renderizar item visual para cada evento
-                Exibir data com formatação local: "item.changed_at|datetimeformat"
-                Exibir "Alterado para: item.new_status"
-                Se "item.description" for diferente de nulo e não for vazio:
-                    Renderizar parágrafo exibindo "Observação: item.description"
-            Finalizar bloco for
+        Estender base_public.html
+        Exibir work_order.number e work_order.public_id
+        Badge colorido conforme work_order.status (if/elif/else Jinja2)
+        Para cada item em history (decrescente):
+            Exibir item.changed_at formatado
+            Exibir "Alterado para: item.new_status"
+            Se item.description não vazio: exibir observação
+

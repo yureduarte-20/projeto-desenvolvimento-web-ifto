@@ -3,6 +3,7 @@ from app.extensions import db
 from datetime import datetime, timezone
 import random
 
+
 class WorkOrder(db.Model):
     __tablename__ = 'work_orders'
 
@@ -11,13 +12,13 @@ class WorkOrder(db.Model):
     status = db.Column(db.String(50), default='Em Orçamento', nullable=False)
     requester_id = db.Column(db.Integer, db.ForeignKey('requesters.id'), nullable=False)
     estimated_delivery_date = db.Column(db.DateTime, nullable=True)
-    
+
     number = db.Column(db.String(20), unique=True, nullable=False)
     public_id = db.Column(db.String(36), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))
-    
+
     final_price = db.Column(db.Float, nullable=True)
     labor_cost = db.Column(db.Float, nullable=True)
-    
+
     delivered_at = db.Column(db.DateTime, nullable=True)
     is_canceled = db.Column(db.Boolean, default=False)
     cancelation_reason = db.Column(db.String(255), nullable=True)
@@ -31,10 +32,22 @@ class WorkOrder(db.Model):
     def __init__(self, **kwargs):
         super(WorkOrder, self).__init__(**kwargs)
         if not self.number:
-            # Simple number generator for now: OS-YYYYMMDD-RND
             date_str = datetime.now().strftime('%Y%m%d')
             rnd_str = str(random.randint(1000, 9999))
             self.number = f"OS-{date_str}-{rnd_str}"
 
+    def generate_public_id(self):
+        """Garante que public_id está preenchido com UUID único.
+
+        Spec: /app/models/work_order.py — ação: modificar
+        Chamado explicitamente na criação de OS (UC1) para rastreabilidade clara.
+        O campo já tem default automático; este método permite chamada explícita
+        e eventual substituição da geração (ex: prefixo customizado).
+        """
+        if not self.public_id:
+            self.public_id = str(uuid.uuid4())
+        return self.public_id
+
     def __repr__(self):
         return f'<WorkOrder {self.number}>'
+
