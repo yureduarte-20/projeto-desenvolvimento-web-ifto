@@ -96,9 +96,13 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-                            Nenhuma Ordem de Serviço encontrada.
+                        <td colspan="5" class="text-center py-0">
+                            <div class="empty-state my-4">
+                                <i class="bi bi-inbox empty-state-icon"></i>
+                                <h3 class="empty-state-title">Nenhuma Ordem de Serviço</h3>
+                                <p class="empty-state-text">Ainda não há nenhuma OS cadastrada no sistema.</p>
+                                <a href="{{ url_for('work_orders.create') }}" class="btn btn-primary">Criar Primeira OS</a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

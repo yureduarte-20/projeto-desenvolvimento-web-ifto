@@ -220,3 +220,26 @@ Abaixo estão detalhadas as especificações com base na arquitetura descrita e 
             Exibir "Alterado para: item.new_status"
             Se item.description não vazio: exibir observação
 
+## 4. Especificações de Frontend
+
+### 4.1 Comportamento Visual e Cores
+O design system deve garantir a consistência de cores usando o "teorema das cores", com foco no contraste:
+- **Cor Primária:** Azul (ex: `#0a58ca`) para identificar ações principais.
+- **Cor de Destaque (Accent):** Laranja (ex: `#fd7e14`) para alertas, chamadas secundárias e indicações de atenção na timeline.
+- **Contraste:** Garantir que textos sobre fundos coloridos sejam legíveis, preferencialmente `text-white` ou escuro onde for claro.
+
+### 4.2 Componentes de Interface e Estados
+- **Loading / Skeleton:** Durante requisições pesadas ou submissões de formulário, botões devem ser desabilitados (`disabled`) e exibir um *spinner* ou classe `.btn-loading`. Se necessário (via manipulação DOM posterior), usar `.skeleton` para carregamento de listas.
+- **Empty States (Estados Vazios):** Listagens (Ordens de Serviço, Usuários) que retornarem vazias devem mostrar um *Empty State* claro, com um ícone, texto descritivo e, preferencialmente, um call-to-action (ex: botão "Nova OS").
+- **Validações Visuais e Feedback:** Formulários devem usar classes do Bootstrap (`.is-invalid`, `.is-valid`) combinadas com mensagens `<div class="invalid-feedback">`.
+
+### 4.3 Responsividade e Acessibilidade
+- **Responsividade:** Layout deve se adaptar perfeitamente em: Desktop (`>992px`), Tablet (`768px-991px`) e Mobile (`<768px`). Tabelas devem possuir scroll horizontal em telas pequenas.
+- **Acessibilidade Básica:**
+  - Presença de *Skip Link* (`#skip-link`) nos templates base para navegação por teclado.
+  - Campos de input com labels explícitas (`for` attribute) ou `aria-label`.
+  - Controle de foco visível (já mapeado no `style.css` via `:focus-visible`).
+  - Uso de atributos `aria-invalid` e `aria-describedby` para erros em formulários.
+
+### 4.4 Tratamento de Falhas (Fallback)
+- **Mensagens de Erro:** Em caso de inputs incorretos ou código de rastreamento inexistente (UC9), a interface não deve redirecionar para uma página genérica 404/500 se o usuário puder corrigir. Exibir a mensagem na própria view de busca ou via `flash` messages em telas autenticadas.

@@ -114,3 +114,21 @@
 | `docs/03-specs.md` | ATUALIZADO |
 | `docs/testing.md` | ATUALIZADO |
 | `README.md` | ATUALIZADO |
+
+---
+
+### Etapa 6 — Design System e Acessibilidade (Frontend Refactor)
+
+#### `app/static/css/style.css`
+- **Novo Esquema de Cores:** `primary` alterado para `#0a58ca` (Azul escuro/forte), e adicionado `accent` `#fd7e14` (Laranja) para botões de destaque, timeline e alertas.
+- **Novas Classes de Acessibilidade/Loading:** Implementadas `.btn-loading` e `.skeleton` para carregamentos responsivos de estado.
+- **Empty States:** Estilo aprimorado `.empty-state`, `.empty-state-icon` com bordas tracejadas e cores consistentes.
+
+#### `app/static/js/app.js`
+- **Manipulador Universal de Formulários:** Adicionado interceptador em submissões `setupFormLoading()` para aplicar estado de loading universal em botões e desabilitar multi-clicks acidentais.
+
+#### Templates Modificados
+- `app/templates/base.html` & `app/templates/base_public.html`: Adicionado identificadores e papéis (`role="main"`, `aria-label`, `id="main-content"`) e inclusão do `style.css` global.
+- `app/templates/work_orders/list.html` & `app/templates/users/list.html`: Implementado o fallback amigável `.empty-state`.
+- `app/templates/work_orders/create.html` & `app/templates/work_orders/edit.html`: Adicionados atributos `data_validate` para validação client-side via WTForms.
+- `app/templates/tracking/result.html`: Cores de `Aguardando Retirada` e Timeline (`border-accent`) refatoradas para usar o Laranja (accent color).

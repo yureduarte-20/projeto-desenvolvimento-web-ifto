@@ -170,7 +170,7 @@
     }
   };
 
-  // Validação em tempo real
+    // Validação em tempo real
   function setupValidation() {
     document.querySelectorAll('[data-validate]').forEach(input => {
       const validationType = input.dataset.validate;
@@ -201,6 +201,42 @@
 
       input.addEventListener('input', validateField);
       input.addEventListener('blur', validateField);
+    });
+  }
+
+  // =====================================================
+  // LOADING STATES EM FORMULÁRIOS
+  // =====================================================
+  
+  function setupFormLoading() {
+    document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', (e) => {
+        // Ignora forms que estejam falhando na validação HTML nativa
+        if (!form.checkValidity()) {
+          return;
+        }
+        
+        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+        if (submitBtn) {
+          // Garante que o botão não seja submetido duas vezes
+          if (submitBtn.classList.contains('btn-loading') || submitBtn.disabled) {
+            e.preventDefault();
+            return;
+          }
+          
+          // Adiciona as classes de loading
+          submitBtn.classList.add('btn-loading');
+          
+          // Previne múltiplos clicks nativos se possível sem quebrar form submission
+          // Alguns browsers bloqueiam o form de submeter se o botão for disabled no click.
+          // Por isso mudamos a pointer-events e a opacidade (via CSS) para simular.
+          
+          // Fallback para remover o loading após timeout caso seja AJAX ou download
+          setTimeout(() => {
+            submitBtn.classList.remove('btn-loading');
+          }, 10000);
+        }
+      });
     });
   }
 
@@ -337,6 +373,7 @@
     // Máscaras e validação
     applyMasks();
     setupValidation();
+    setupFormLoading();
 
     // Expor funções globais
     window.EletroService = {

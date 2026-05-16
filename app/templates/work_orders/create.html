@@ -21,28 +21,28 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             {{ form.requester_name.label(class="form-label") }}
-                            {{ form.requester_name(class="form-control " ~ ("is-invalid" if form.requester_name.errors else "")) }}
+                            {{ form.requester_name(class="form-control " ~ ("is-invalid" if form.requester_name.errors else ""), data_validate="required", data_error_message="O nome é obrigatório") }}
                             {% for error in form.requester_name.errors %}
                                 <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-6">
                             {{ form.requester_email.label(class="form-label") }}
-                            {{ form.requester_email(class="form-control " ~ ("is-invalid" if form.requester_email.errors else ""), type="email") }}
+                            {{ form.requester_email(class="form-control " ~ ("is-invalid" if form.requester_email.errors else ""), type="email", data_validate="email", data_error_message="E-mail inválido") }}
                             {% for error in form.requester_email.errors %}
                                 <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-6">
                             {{ form.requester_phone.label(class="form-label") }}
-                            {{ form.requester_phone(class="form-control " ~ ("is-invalid" if form.requester_phone.errors else ""), type="tel") }}
+                            {{ form.requester_phone(class="form-control " ~ ("is-invalid" if form.requester_phone.errors else ""), type="tel", data_mask="phone", data_validate="phone", data_error_message="Telefone inválido") }}
                             {% for error in form.requester_phone.errors %}
                                 <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-6">
                             {{ form.requester_document.label(class="form-label") }}
-                            {{ form.requester_document(class="form-control " ~ ("is-invalid" if form.requester_document.errors else "")) }}
+                            {{ form.requester_document(class="form-control " ~ ("is-invalid" if form.requester_document.errors else ""), data_mask="document", data_validate="required", data_error_message="Documento inválido") }}
                             {% for error in form.requester_document.errors %}
                                 <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
@@ -62,7 +62,7 @@
                     <div class="row g-3">
                         <div class="col-12">
                             {{ form.description.label(class="form-label") }}
-                            {{ form.description(class="form-control " ~ ("is-invalid" if form.description.errors else ""), rows="4", placeholder="Descreva o problema com detalhes...") }}
+                            {{ form.description(class="form-control " ~ ("is-invalid" if form.description.errors else ""), rows="4", placeholder="Descreva o problema com detalhes...", data_validate="required", data_error_message="A descrição é obrigatória") }}
                             {% for error in form.description.errors %}
                                 <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}

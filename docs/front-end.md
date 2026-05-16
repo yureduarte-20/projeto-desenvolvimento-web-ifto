@@ -61,7 +61,8 @@ app/
 
 | Nome | Hex | Uso |
 |------|-----|-----|
-| Primary | `#0d6efd` | Botões primários, links, navegação ativa |
+| Primary | `#0a58ca` | Azul principal. Botões primários, links, navegação ativa |
+| Accent | `#fd7e14` | Laranja de destaque. Chamadas de atenção, alertas e ações de destaque |
 | Secondary | `#6c757d` | Botões secundários, textos muted |
 | Success | `#198754` | Sucesso, finalizado, confirmar |
 | Danger | `#dc3545` | Erros, cancelamento, exclusão |
@@ -72,12 +73,12 @@ app/
 
 #### Cores de Status (EletroService)
 
-| Status | Classe Bootstrap | Cor | Uso |
+| Status | Classe | Cor | Uso |
 |--------|------------------|-----|-----|
 | Em Orçamento | `bg-info text-dark` | Ciano | OS recém-criada |
 | Em Manutenção | `bg-primary` | Azul | OS em reparo |
 | Aguardando Pagamento | `bg-warning text-dark` | Amarelo | Serviço concluído |
-| Aguardando Retirada | `bg-secondary` | Cinza | Pagamento confirmado |
+| Aguardando Retirada | `bg-accent` | Laranja | Pagamento confirmado |
 | Finalizado | `bg-success` | Verde | OS concluída |
 | Cancelado | `bg-danger` | Vermelho | OS cancelada |
 

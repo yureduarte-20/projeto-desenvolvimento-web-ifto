@@ -70,7 +70,7 @@
                     
                     <div class="mb-3">
                         {{ form.description.label(class="form-label fw-bold") }}
-                        {{ form.description(class="form-control " ~ ("is-invalid" if form.description.errors else ""), rows="4", readonly=is_terminal) }}
+                        {{ form.description(class="form-control " ~ ("is-invalid" if form.description.errors else ""), rows="4", readonly=is_terminal, data_validate="required", data_error_message="A descrição é obrigatória") }}
                         {% for error in form.description.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                         {% endfor %}
@@ -137,7 +137,7 @@
                         <div class="accordion-body bg-light">
                             <p class="small text-muted mb-3">Ao cancelar, esta OS não poderá mais ser reativada ou editada.</p>
                             <label for="{{ form.cancelation_reason.id }}" class="form-label fw-bold">Motivo do Cancelamento</label>
-                            {{ form.cancelation_reason(class="form-control mb-3", placeholder="Obrigatório para cancelar...") }}
+                            {{ form.cancelation_reason(class="form-control mb-3", placeholder="Obrigatório para cancelar...", data_validate="required", data_error_message="Motivo obrigatório") }}
                             <button type="submit" class="btn btn-danger w-100" onclick="document.getElementById('form-action').value='cancel'; return confirm('Confirmar o cancelamento definitivo desta OS?');">
                                 Confirmar Cancelamento Definitivo
                             </button>

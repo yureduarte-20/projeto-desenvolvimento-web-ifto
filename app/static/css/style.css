@@ -7,10 +7,15 @@
 /* 1. VARIÁVEIS E CONFIGURAÇÕES
    ===================================================== */
 :root {
-  /* Cores Primárias */
-  --color-primary: #0d6efd;
-  --color-primary-dark: #0b5ed7;
-  --color-primary-light: #6ea8fe;
+  /* Cores Primárias (Azul) */
+  --color-primary: #0a58ca;
+  --color-primary-dark: #084298;
+  --color-primary-light: #3d8bfd;
+  
+  /* Cor de Destaque (Laranja Accent) */
+  --color-accent: #fd7e14;
+  --color-accent-dark: #e8590c;
+  --color-accent-light: #ffa94d;
   
   /* Cores de Status */
   --color-success: #198754;
@@ -19,12 +24,12 @@
   --color-info: #0dcaf0;
   
   /* Status de OS */
-  --status-orcamento: #0dcaf0;
-  --status-manutencao: #0d6efd;
-  --status-aguardando-pagamento: #ffc107;
-  --status-aguardando-retirada: #6c757d;
-  --status-finalizado: #198754;
-  --status-cancelado: #dc3545;
+  --status-orcamento: var(--color-info);
+  --status-manutencao: var(--color-primary);
+  --status-aguardando-pagamento: var(--color-warning);
+  --status-aguardando-retirada: var(--color-accent);
+  --status-finalizado: var(--color-success);
+  --status-cancelado: var(--color-danger);
   
   /* Cores Neutras */
   --color-white: #ffffff;
@@ -260,6 +265,7 @@ strong {
 .text-justify { text-align: justify !important; }
 
 .text-primary { color: var(--color-primary) !important; }
+.text-accent { color: var(--color-accent) !important; }
 .text-secondary { color: var(--color-gray-600) !important; }
 .text-success { color: var(--color-success) !important; }
 .text-danger { color: var(--color-danger) !important; }
@@ -269,6 +275,13 @@ strong {
 .text-dark { color: var(--color-gray-800) !important; }
 .text-muted { color: var(--color-gray-600) !important; }
 .text-white { color: var(--color-white) !important; }
+
+/* Backgrounds e Borders */
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-accent { background-color: var(--color-accent) !important; color: var(--color-white) !important; }
+
+.border-primary { border-color: var(--color-primary) !important; }
+.border-accent { border-color: var(--color-accent) !important; }
 
 .fw-light { font-weight: var(--font-weight-light) !important; }
 .fw-normal { font-weight: var(--font-weight-normal) !important; }
@@ -377,16 +390,32 @@ strong {
   margin-right: 0.5rem;
 }
 
-/* Estados vazios */
+/* Estados vazios (Empty States) */
 .empty-state {
   text-align: center;
   padding: var(--space-12) var(--space-4);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  border: 1px dashed var(--color-gray-300);
 }
 
 .empty-state-icon {
-  font-size: 3rem;
-  color: var(--color-gray-400);
+  font-size: 3.5rem;
+  color: var(--color-accent);
   margin-bottom: var(--space-4);
+  opacity: 0.8;
+}
+
+.empty-state-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-800);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-text {
+  color: var(--color-gray-600);
+  margin-bottom: var(--space-6);
 }
 
 /* Toast notifications */
@@ -440,15 +469,59 @@ strong {
   }
 }
 
-/* Skeleton loading */
+/* Skeleton loading e Loading States */
 .placeholder-glow .placeholder {
   animation: placeholder-glow 2s ease-in-out infinite;
+  background-color: var(--color-gray-300);
+  border-radius: var(--border-radius-base);
 }
 
 @keyframes placeholder-glow {
   50% {
     opacity: 0.5;
   }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-gray-200) 25%, var(--color-gray-300) 50%, var(--color-gray-200) 75%);
+  background-size: 200% 100%;
+  animation: loading-skeleton 1.5s infinite;
+  border-radius: var(--border-radius-sm);
+}
+
+@keyframes loading-skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Botão em Loading */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 1.2em;
+  height: 1.2em;
+  top: 50%;
+  left: 50%;
+  margin-top: -0.6em;
+  margin-left: -0.6em;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: var(--color-white);
+  border-radius: 50%;
+  animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+  to { transform: rotate(360deg); }
 }
 
 /* 6. UTILITÁRIOS DE ACESSIBILIDADE

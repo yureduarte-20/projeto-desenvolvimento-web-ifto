@@ -34,7 +34,7 @@
                         <i class="bi bi-credit-card me-1"></i> {{ work_order.status }}
                     </span>
                 {% elif work_order.status == 'Aguardando Retirada' %}
-                    <span class="badge bg-secondary fs-6 py-2 px-3">
+                    <span class="badge bg-accent fs-6 py-2 px-3">
                         <i class="bi bi-box-seam me-1"></i> {{ work_order.status }}
                     </span>
                 {% elif work_order.status == 'Finalizado' %}
@@ -71,7 +71,7 @@
                 {% elif item.new_status == 'Cancelado' %}border-danger
                 {% elif item.new_status == 'Em Manutenção' %}border-primary
                 {% elif item.new_status == 'Aguardando Pagamento' %}border-warning
-                {% elif item.new_status == 'Aguardando Retirada' %}border-secondary
+                {% elif item.new_status == 'Aguardando Retirada' %}border-accent
                 {% else %}border-info
                 {% endif %} py-3 px-4">
                 <div class="d-flex justify-content-between align-items-start">

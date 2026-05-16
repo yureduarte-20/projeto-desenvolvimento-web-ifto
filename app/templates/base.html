@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4" aria-label="Navegação Principal">
     <div class="container">
         <a class="navbar-brand" href="{{ url_for('main.index') }}">EletroService</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -50,7 +50,7 @@
     </div>
 </nav>
 
-<main class="container">
+<main id="main-content" class="container" role="main" aria-label="Conteúdo Principal">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}

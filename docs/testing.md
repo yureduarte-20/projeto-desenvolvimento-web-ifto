@@ -98,7 +98,21 @@ class TestingConfig(Config):
 
 ## 3. Testes de Frontend (E2E)
 
-### 3.1 Estratégia de Testes E2E
+### 3.1 Escopo de Testes de Frontend
+
+Para garantir a qualidade visual e comportamental do EletroService, a estratégia de testes abrange obrigatoriamente:
+- **Testes Responsivos:** Garantir layout perfeito em Desktop, Tablet e Mobile. Tabelas devem usar scroll horizontal apropriado.
+- **Testes de Acessibilidade:** Uso de axe-core para validar alto contraste (cores primária/accent), aria-labels, foco visível e skip-links.
+- **Renderização Condicional:** Validação da apresentação (ou não) de elementos baseados no estado (ex: badges coloridos, histórico vazio).
+- **Integração com APIs:** Testes para assegurar que falhas de rede nas rotas `/api/` (dashboards) e timeouts sejam tratados de forma elegante sem quebrar a tela.
+- **Testes de Componentes:** Interações modais, animações de fade e hover em cards.
+- **Testes E2E (Fim a Fim):** Navegação completa simulando o usuário real (Playwright).
+- **Regressão Visual:** Comparações baseadas em screenshots (threshold de 20%) para checar as mudanças de cores do Design System.
+- **Testes de Usabilidade:** Validação de fluxos lógicos e prevenção de erros em formulários.
+- **Cenários de Erro e Fallback:** Comportamento do sistema perante dados inexistentes ou formatos inválidos (ex: código de rastreamento falso no UC9).
+- **Validações de Loading / Skeleton / Error States:** Testes para garantir que ao submeter um formulário o botão entre em estado `disabled` com `.btn-loading`, e que áreas de lista exibam `.empty-state` corretamente na ausência de dados.
+
+### 3.2 Estratégia de Testes E2E
 
 Os testes E2E utilizam **Playwright** para garantir que as funcionalidades críticas do sistema funcionem corretamente do ponto de vista do usuário final.
 

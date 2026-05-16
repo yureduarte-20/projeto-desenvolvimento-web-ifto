@@ -36,7 +36,14 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">Nenhum usuário cadastrado.</td>
+                    <td colspan="5" class="text-center py-0">
+                        <div class="empty-state my-4">
+                            <i class="bi bi-people empty-state-icon"></i>
+                            <h3 class="empty-state-title">Nenhum Usuário</h3>
+                            <p class="empty-state-text">Ainda não há usuários cadastrados.</p>
+                            <a href="{{ url_for('users.create') }}" class="btn btn-primary">Cadastrar Usuário</a>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
